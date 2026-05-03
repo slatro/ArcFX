@@ -1,10 +1,17 @@
 import React from 'react';
-import { LogoIcon } from './LogoIcon';
 
 export const Logo = () => (
   <div className="flex items-center gap-4 group cursor-pointer">
+    {/* The REAL Image File (Right-clickable) */}
     <div className="shrink-0 transition-all duration-500 group-hover:scale-105">
-      <LogoIcon size={44} />
+      <img 
+        src="/assets/logo-final.png" 
+        alt="ArcFX Logo"
+        className="w-[44px] h-[44px] object-contain mix-blend-screen brightness-110 contrast-110"
+        style={{ 
+          filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.4))'
+        }}
+      />
     </div>
 
     <div className="flex items-baseline gap-1 pt-1">

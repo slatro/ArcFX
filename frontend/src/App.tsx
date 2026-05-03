@@ -1,6 +1,5 @@
 import React from "react";
 import { Header } from "./components/Header";
-import { LogoIcon } from "./components/LogoIcon";
 import { SwapCard } from "./components/SwapCard";
 import { TransactionPanel } from "./components/TransactionPanel";
 import { TrendingUp, ShieldCheck, Globe, Zap, ArrowUpRight } from "lucide-react";
@@ -73,7 +72,7 @@ export default function App() {
 
             <div className="premium-card p-4">
               <div className="flex items-center gap-3 text-white/60 mb-4">
-                <LogoIcon size={24} glow={false} />
+                <img src="/assets/logo-final.png" alt="Arc" className="w-7 h-7 mix-blend-screen brightness-125" />
                 <span className="text-[12px] font-bold uppercase tracking-widest text-white/80">Arc Ecosystem</span>
               </div>
               <p className="text-[10px] leading-relaxed text-white/30 mb-3">
