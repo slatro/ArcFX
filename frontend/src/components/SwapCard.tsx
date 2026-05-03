@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDown, ArrowsUpDown, Settings, ChevronDown, Wallet, Edit2, RefreshCw } from 'lucide-react';
+import { ArrowsUpDown, Settings, ChevronDown, Wallet, Edit2, RefreshCw } from 'lucide-react';
+
+/* 
+  ARCFX TERMINAL - FINAL BUILD SEAL v2.1 
+  - Implementation: Imperial Cream Theme & Functional Dual-Arrow Swap
+*/
 
 export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlippage: (val: string) => void }) => {
   const [fromAmount, setFromAmount] = useState('10');
@@ -7,8 +12,6 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
   const [isEditingSlippage, setIsEditingSlippage] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [rate, setRate] = useState(1.1733); 
-  
-  // State for swapping tokens
   const [isSwapped, setIsSwapped] = useState(false);
 
   const fetchLiveRate = async () => {
@@ -16,28 +19,23 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
       const response = await fetch('https://api.coinbase.com/v2/prices/EUR-USD/spot');
       const data = await response.json();
       if (data && data.data && data.data.amount) {
-        const newRate = parseFloat(data.data.amount);
-        setRate(newRate);
+        setRate(parseFloat(data.data.amount));
       }
     } catch (error) {
-      console.error('Coinbase API Error:', error);
+      console.error('API Sync Error:', error);
     }
   };
 
   useEffect(() => {
     fetchLiveRate();
-    const interval = setInterval(() => {
-      handleRefresh();
-    }, 60000);
+    const interval = setInterval(handleRefresh, 60000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     if (!isNaN(parseFloat(fromAmount))) {
-      // Calculate based on swap direction
       const currentRate = isSwapped ? (1 / rate) : rate;
-      const calculated = parseFloat(fromAmount) * currentRate;
-      setToAmount(calculated.toFixed(4));
+      setToAmount((parseFloat(fromAmount) * currentRate).toFixed(4));
     }
   }, [fromAmount, rate, isSwapped]);
 
@@ -49,22 +47,21 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
 
   const handleSwapTokens = () => {
     setIsSwapped(!isSwapped);
+    const temp = fromAmount;
     setFromAmount(toAmount);
-    setToAmount(fromAmount);
+    setToAmount(temp);
   };
 
-  const TokenBox = ({ type, amount, setAmount, symbol, name, iconColor, isReadOnly, currentRate }: any) => {
-    // Financial correction: Calculate USD value correctly based on symbol
-    const usdValue = symbol === 'mEURC' ? (parseFloat(amount || '0') * (isSwapped ? (1/currentRate) : currentRate)).toFixed(2) : (parseFloat(amount || '0') * 1.0).toFixed(2);
-    
-    // If it's the 'To' box in the current direction, we need to handle the conversion logic for the USD display
+  const TokenBox = ({ type, amount, setAmount, symbol, name, iconColor, isReadOnly }: any) => {
+    // Financial logic for USD display
     const finalUsdValue = symbol === 'mEURC' ? (parseFloat(amount || '0') * rate).toFixed(2) : (parseFloat(amount || '0') * 1.0).toFixed(2);
 
     return (
       <div className="flex flex-col gap-1.5 mb-2.5">
         <div className="flex justify-between items-center px-1">
           <div className="flex items-center gap-2 text-[9px] font-bold text-white/30 uppercase tracking-wider">
-            <Wallet size={10} className="text-[#fef3c7]/80" />
+            {/* Wallet icon changed to Cream (#FDF5E6) */}
+            <Wallet size={10} className="text-[#FDF5E6]" />
             <span>{type}: 0x2EE5...1704</span>
           </div>
           <div className="text-[9px] font-bold text-white/30 flex items-center gap-1">
@@ -106,60 +103,36 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
 
   return (
     <div className="flex flex-col gap-3 w-full max-w-[480px]">
-      {/* LAYER 1: CENTERED SWAP TITLE */}
       <div className="premium-card p-3.5 md:p-4.5 flex items-center justify-center relative">
-        <h1 className="text-base md:text-lg font-black uppercase tracking-[0.4em] text-white pl-2 text-shadow-premium">
-          Swap
-        </h1>
+        <h1 className="text-base md:text-lg font-black uppercase tracking-[0.4em] text-white pl-2 text-shadow-premium">Swap</h1>
         <button className="absolute right-4 p-1.5 rounded-xl hover:bg-white/[0.05] transition-all text-white/20 hover:text-white">
           <Settings size={18} />
         </button>
       </div>
 
-      {/* LAYER 2: MAIN ASSET CARD */}
       <div className="premium-card p-4 md:p-6 flex flex-col relative">
-        <TokenBox 
-          type="From" 
-          symbol={fromToken.symbol} 
-          name={fromToken.name} 
-          amount={fromAmount} 
-          setAmount={setFromAmount}
-          iconColor={fromToken.color}
-          isReadOnly={false}
-          currentRate={rate}
-        />
+        <TokenBox type="From" symbol={fromToken.symbol} name={fromToken.name} amount={fromAmount} setAmount={setFromAmount} iconColor={fromToken.color} isReadOnly={false} />
         
         <div className="relative h-1 flex items-center justify-center my-4 md:my-5">
           <div className="absolute inset-x-0 h-px bg-white/[0.04]" />
           <button 
             onClick={handleSwapTokens}
-            className="z-10 w-7 h-7 rounded-full bg-[#0a0a0c] border border-white/[0.12] flex items-center justify-center text-blue-400 hover:text-blue-300 hover:scale-110 active:scale-95 transition-all shadow-xl group/swap"
+            className="z-10 w-7 h-7 rounded-full bg-[#0a0a0c] border border-white/[0.12] flex items-center justify-center text-[#FDF5E6] hover:text-white hover:scale-110 active:scale-95 transition-all shadow-xl group/swap"
           >
+            {/* ArrowsUpDown icon explicitly highlighted in Cream */}
             <ArrowsUpDown size={11} className="group-hover/swap:rotate-180 transition-transform duration-500" />
           </button>
         </div>
 
-        <TokenBox 
-          type="To" 
-          symbol={toToken.symbol} 
-          name={toToken.name} 
-          amount={toAmount} 
-          setAmount={setToAmount}
-          iconColor={toToken.color}
-          isReadOnly={true}
-          currentRate={rate}
-        />
+        <TokenBox type="To" symbol={toToken.symbol} name={toToken.name} amount={toAmount} setAmount={setToAmount} iconColor={toToken.color} isReadOnly={true} />
       </div>
 
-      {/* LAYER 3: ACTION CARD */}
       <div className="premium-card p-3.5 md:p-4.5 flex flex-col gap-3">
         <div className="flex justify-between items-center px-1">
-          <span className="text-[9px] font-bold text-white/20 uppercase tracking-[0.2em] border-b border-dashed border-white/5 pb-0.5">
-            Slippage Tolerance
-          </span>
+          <span className="text-[9px] font-bold text-white/20 uppercase tracking-[0.2em]">Slippage Tolerance</span>
           <div 
             onClick={() => setIsEditingSlippage(true)}
-            className="flex items-center gap-2 bg-[#fef3c7]/5 border border-[#fef3c7]/10 px-2.5 py-1 rounded-xl cursor-pointer hover:bg-[#fef3c7]/10 transition-all"
+            className="flex items-center gap-2 bg-[#FDF5E6]/5 border border-[#FDF5E6]/10 px-2.5 py-1 rounded-xl cursor-pointer hover:bg-[#FDF5E6]/10 transition-all"
           >
             {isEditingSlippage ? (
               <input 
@@ -168,12 +141,12 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
                 value={slippage}
                 onChange={(e) => setSlippage(e.target.value)}
                 onBlur={() => setIsEditingSlippage(false)}
-                className="bg-transparent text-[9px] font-black text-[#fef3c7] w-8 outline-none"
+                className="bg-transparent text-[9px] font-black text-[#FDF5E6] w-8 outline-none"
               />
             ) : (
-              <span className="text-[9px] font-black text-[#fef3c7]">{slippage}%</span>
+              <span className="text-[9px] font-black text-[#FDF5E6]">{slippage}%</span>
             )}
-            <Edit2 size={8} className="text-[#fef3c7]/60" />
+            <Edit2 size={8} className="text-[#FDF5E6]/60" />
           </div>
         </div>
 
@@ -182,10 +155,7 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
         </button>
 
         <div className="flex justify-between items-center px-2">
-          <button 
-            onClick={handleRefresh}
-            className="flex items-center gap-1.5 text-[9px] font-bold text-white/20 tracking-tight hover:text-blue-400 transition-colors"
-          >
+          <button onClick={handleRefresh} className="flex items-center gap-1.5 text-[9px] font-bold text-white/20 tracking-tight hover:text-blue-400 transition-colors">
             <RefreshCw size={10} className={`text-blue-500/60 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span className={isRefreshing ? 'animate-pulse text-white' : ''}>
               1 {fromToken.symbol} ≈ {isSwapped ? (1/rate).toFixed(4) : rate.toFixed(4)} {toToken.symbol}
