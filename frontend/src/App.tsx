@@ -95,8 +95,8 @@ export default function App() {
           {/* Swap Column (Order-1 on mobile, Order-2 on desktop) */}
           <div className="flex flex-col items-center order-1 xl:order-2">
             <SwapCard slippage={slippage} setSlippage={setSlippage} />
-            {/* Sleek Horizontal Info Bar - ALIGNED WITH LEFT SIDE */}
-            <div className="flex items-center gap-4 px-1 mt-4 text-[10px] font-bold text-white/20 uppercase tracking-widest">
+            {/* Sleek Horizontal Info Bar - PERFECTLY ALIGNED */}
+            <div className="flex items-center gap-4 px-1 mt-5 text-[10px] font-bold text-white/20 uppercase tracking-widest">
               <div className="flex items-center gap-2">
                 <span>Slippage Tolerance</span>
                 <span className="text-blue-400">{slippage}%</span>
