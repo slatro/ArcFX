@@ -3,7 +3,7 @@ import { Header } from "./components/Header";
 import { SwapCard } from "./components/SwapCard";
 import { TradingViewChart as PriceChart } from "./components/PriceChart";
 import { TransactionPanel } from "./components/TransactionPanel";
-import { Zap } from "lucide-react";
+import { Zap, Info, Settings, ShieldCheck } from "lucide-react";
 
 export default function App() {
   return (
@@ -34,7 +34,7 @@ export default function App() {
       
       {/* Restructured Top Info Bar with Restored Ticker */}
       <div className="bg-white/[0.02] border-b border-white/[0.05] py-2.5 px-6">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-8">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-8">
           
           {/* Left: Protocol Status */}
           <div className="flex items-center gap-4 shrink-0">
@@ -43,7 +43,7 @@ export default function App() {
               <span className="text-[9px] font-extrabold text-blue-400 uppercase tracking-widest">v2.0 Active</span>
             </div>
             <div className="h-4 w-px bg-white/10 hidden md:block" />
-            <p className="text-[10px] text-white/20 font-medium hidden md:block uppercase tracking-wider">
+            <p className="text-[10px] text-white/40 font-medium hidden md:block uppercase tracking-wider">
               Settlement Protocol
             </p>
           </div>
@@ -82,51 +82,49 @@ export default function App() {
       </div>
 
       <main className="flex-1 flex flex-col items-center relative py-8 px-6">
-        {/* Decorative Background Beams */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[120%] bg-blue-500/5 blur-[120px] rotate-12" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[120%] bg-purple-500/5 blur-[120px] -rotate-12" />
-        </div>
-
-        {/* Professional 2-Column Layout */}
-        <div className="w-full max-w-[1400px] grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8 items-start">
+        {/* Professional 2-Column Layout - STRETCHED for Symmetry */}
+        <div className="w-full max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-8 items-stretch">
           
-          {/* Left: TradingView Price Chart */}
+          {/* Left Column: Chart + Bottom Bar */}
           <div className="flex flex-col gap-4">
             <PriceChart />
-            <div className="flex items-center gap-4 px-4 py-3 premium-card bg-blue-500/[0.02]">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Market Status: Highly Liquid</span>
+            <div className="flex items-center gap-4 px-6 py-4 premium-card bg-blue-500/[0.03] h-[52px]">
+              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+              <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Market Status: Highly Liquid</span>
               <div className="flex-1" />
-              <div className="flex gap-4">
-                 <span className="text-[10px] font-mono text-white/20">VOL: $4.2M</span>
-                 <span className="text-[10px] font-mono text-white/20">Slippage: 0.02%</span>
+              <div className="flex gap-6">
+                 <span className="text-[10px] font-mono text-white/30 tracking-tight uppercase">Vol (24h): $12.4m</span>
+                 <span className="text-[10px] font-mono text-white/30 tracking-tight uppercase">Slippage: 0.02%</span>
               </div>
             </div>
           </div>
 
-          {/* Right: Main Swap Card */}
-          <div className="flex flex-col items-center animate-fade-in-right">
+          {/* Right Column: Swap + Bottom Bar (MIRRORED Symmetry) */}
+          <div className="flex flex-col gap-4">
             <SwapCard />
-            
-            <div className="mt-8 grid grid-cols-3 gap-3 w-full">
-              {[
-                { label: "Slippage", value: "0.1%" },
-                { label: "Fee", value: "0.03%" },
-                { label: "Stability", value: "99.9%" },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center gap-1 px-2 py-3 rounded-2xl bg-white/[0.02] border border-white/[0.05]">
-                  <span className="text-[8px] font-extrabold uppercase tracking-widest text-white/20">{item.label}</span>
-                  <span className="text-[9px] font-bold text-white/60">{item.value}</span>
-                </div>
-              ))}
+            <div className="flex items-center gap-4 px-6 py-4 premium-card bg-blue-500/[0.03] h-[52px]">
+              <div className="flex items-center gap-2">
+                <Info size={12} className="text-white/20" />
+                <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Slippage: 0.5%</span>
+              </div>
+              <div className="flex-1" />
+              <div className="flex gap-6 items-center">
+                 <div className="flex items-center gap-2">
+                   <Settings size={12} className="text-white/20" />
+                   <span className="text-[10px] font-mono text-white/60 tracking-tight uppercase">Fee: 0.03%</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   <ShieldCheck size={12} className="text-white/20" />
+                   <span className="text-[10px] font-mono text-white/60 tracking-tight uppercase">Stability: 99.9%</span>
+                 </div>
+              </div>
             </div>
           </div>
 
         </div>
 
         {/* Transaction History Section */}
-        <div className="w-full max-w-[1400px] mt-12">
+        <div className="w-full max-w-[1600px] mt-12">
           <div className="flex items-center justify-between mb-6 px-4">
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold tracking-tight">Ecosystem Activity</h2>
@@ -161,4 +159,3 @@ export default function App() {
     </div>
   );
 }
-// Stable Terminal Version - Force Refresh
