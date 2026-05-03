@@ -21,8 +21,8 @@ export const SwapCard = () => {
           <span className="text-white/50">Balance: {currentIsFlipped ? '1,200.00' : '2,450.00'}</span>
         </div>
         <div className="flex items-center gap-4">
-          {/* Enhanced Input Box */}
-          <div className="flex-1 bg-black/40 border border-white/[0.08] rounded-2xl px-4 py-2.5 shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]">
+          {/* Lightened, More Glassy Input Box */}
+          <div className="flex-1 bg-white/[0.04] border border-white/[0.1] rounded-2xl px-4 py-2.5 shadow-[inset_0_1px_4px_rgba(255,255,255,0.05)]">
             <input 
               type="number" 
               placeholder="0.0" 
