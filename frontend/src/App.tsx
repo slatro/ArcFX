@@ -72,7 +72,7 @@ export default function App() {
 
             <div className="premium-card p-4">
               <div className="flex items-center gap-3 text-white/60 mb-4">
-                <img src="/assets/logo-final.png" alt="Arc" className="w-7 h-7 mix-blend-screen brightness-125" />
+                <img src="/assets/logo-final.png" alt="Arc" className="w-7 h-7 mix-blend-screen contrast-[1.1] brightness-[1.1]" />
                 <span className="text-[12px] font-bold uppercase tracking-widest text-white/80">Arc Ecosystem</span>
               </div>
               <p className="text-[10px] leading-relaxed text-white/30 mb-3">

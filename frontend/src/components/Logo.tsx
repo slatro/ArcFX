@@ -2,12 +2,15 @@ import React from 'react';
 
 export const Logo = () => (
   <div className="flex items-center gap-4 group cursor-pointer">
-    {/* The ABSOLUTE REAL Logo Image (Right-clickable) */}
+    {/* The ABSOLUTE REAL Logo Image (Bigger & Cleaner) */}
     <div className="shrink-0 transition-all duration-500 group-hover:scale-105">
       <img 
         src="/assets/logo-real-final.jpg" 
         alt="ArcFX Logo"
-        className="w-[48px] h-[48px] object-contain mix-blend-screen"
+        className="w-[56px] h-[56px] object-contain mix-blend-screen contrast-[1.1] brightness-[1.1]"
+        style={{ 
+          filter: 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.3))'
+        }}
       />
     </div>
 
