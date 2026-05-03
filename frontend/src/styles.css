@@ -94,16 +94,22 @@ body {
   to { transform: translate(60px, 60px); }
 }
 
-/* REFINED HIGH-TRANSLUCENCY GLASSMORPHISM */
+/* TRUE FROSTED GLASSMORPHISM - MATCHING USER REFERENCE */
 .premium-card {
   @apply rounded-[12px] transition-all duration-700 relative overflow-hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
   box-shadow: 
     0 40px 100px -20px rgba(0, 0, 0, 0.8),
     inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.text-shadow-premium {
+  text-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Subtle noise overlay for glass texture */

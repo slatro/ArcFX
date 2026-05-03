@@ -8,7 +8,6 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [rate, setRate] = useState(1.1733); 
   
-  // Function to fetch real-time rate from Coinbase API
   const fetchLiveRate = async () => {
     try {
       const response = await fetch('https://api.coinbase.com/v2/prices/EUR-USD/spot');
@@ -16,14 +15,12 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
       if (data && data.data && data.data.amount) {
         const newRate = parseFloat(data.data.amount);
         setRate(newRate);
-        console.log("Coinbase Rate Sync:", newRate);
       }
     } catch (error) {
       console.error('Coinbase API Error:', error);
     }
   };
 
-  // Initial fetch and auto-refresh every 60 seconds
   useEffect(() => {
     fetchLiveRate();
     const interval = setInterval(() => {
@@ -32,7 +29,6 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
     return () => clearInterval(interval);
   }, []);
 
-  // Update "toAmount" whenever "fromAmount" or "rate" changes
   useEffect(() => {
     if (!isNaN(parseFloat(fromAmount))) {
       const calculated = parseFloat(fromAmount) * rate;
@@ -58,8 +54,7 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
         </div>
       </div>
       
-      {/* INTERNAL BOXES MADE MORE GLASSY TO MATCH THE PREMIUM FEEL */}
-      <div className="bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm rounded-[12px] p-3.5 md:p-4 flex items-center justify-between hover:bg-white/[0.05] transition-all group">
+      <div className="bg-black/40 border border-white/[0.08] backdrop-blur-md rounded-[12px] p-3.5 md:p-4 flex items-center justify-between hover:bg-black/60 transition-all group">
         <button className="flex items-center gap-3 px-2 py-0.5 rounded-[12px] hover:bg-white/5 transition-all">
           <div className={`w-7 h-7 rounded-full ${iconColor} flex items-center justify-center shadow-lg shadow-black/20`}>
             <div className="w-3.5 h-3.5 rounded-full border-2 border-white/20" />
@@ -89,16 +84,18 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
 
   return (
     <div className="flex flex-col gap-2 w-full max-w-[480px]">
-      {/* LAYER 1: CENTERED WHITE HEADER - MATCHING BOTTOM CARD STYLE */}
-      <div className="premium-card p-4 md:p-5.5 flex items-center justify-center relative">
-        <h1 className="text-[10px] font-black uppercase tracking-[0.6em] text-white pl-2">Swap</h1>
-        <button className="absolute right-3 p-1.5 rounded-xl hover:bg-white/[0.05] transition-all text-white/20 hover:text-white">
-          <Settings size={16} />
+      {/* LAYER 1: CENTERED SWAP TITLE - MATCHING BUTTON STYLE */}
+      <div className="premium-card p-4 md:p-5 flex items-center justify-center relative">
+        <h1 className="text-base md:text-lg font-black uppercase tracking-[0.4em] text-white pl-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+          Swap
+        </h1>
+        <button className="absolute right-4 p-1.5 rounded-xl hover:bg-white/[0.05] transition-all text-white/20 hover:text-white">
+          <Settings size={18} />
         </button>
       </div>
 
-      {/* LAYER 2: MAIN ASSET CARD - MATCHING BOTTOM CARD STYLE & SPACING */}
-      <div className="premium-card p-4 md:p-5.5 flex flex-col relative">
+      {/* LAYER 2: MAIN ASSET CARD - RESTORED AIRY HEIGHT */}
+      <div className="premium-card p-6 md:p-8 flex flex-col relative">
         <TokenBox 
           type="From" 
           symbol="mEURC" 
@@ -109,10 +106,10 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
           isReadOnly={false}
         />
         
-        <div className="relative h-2 flex items-center justify-center my-4 md:my-5">
+        <div className="relative h-2 flex items-center justify-center my-6 md:my-8">
           <div className="absolute inset-x-0 h-px bg-white/[0.04]" />
-          <button className="z-10 w-7 h-7 rounded-full bg-[#0a0a0c] border border-white/[0.08] flex items-center justify-center text-blue-400 hover:scale-110 transition-transform shadow-lg">
-            <ArrowDown size={12} />
+          <button className="z-10 w-8 h-8 rounded-full bg-[#0a0a0c] border border-white/[0.08] flex items-center justify-center text-blue-400 hover:scale-110 transition-transform shadow-lg">
+            <ArrowDown size={14} />
           </button>
         </div>
 
@@ -127,7 +124,7 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
         />
       </div>
 
-      {/* LAYER 3: COMPACT GRADIENT ACTION CARD - THE REFERENCE STYLE */}
+      {/* LAYER 3: COMPACT GRADIENT ACTION CARD */}
       <div className="premium-card p-4 md:p-5.5 flex flex-col gap-3">
         <div className="flex justify-between items-center px-1">
           <span className="text-[9px] font-bold text-white/20 uppercase tracking-[0.2em] border-b border-dashed border-white/5 pb-0.5">
@@ -153,7 +150,7 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
           </div>
         </div>
 
-        <button className="w-full py-2.5 md:py-3 rounded-[12px] bg-gradient-to-b from-blue-600 to-[#111827] hover:from-blue-500 hover:to-[#1f2937] text-white font-bold text-sm md:text-base transition-all shadow-[0_4px_20px_rgba(37,99,235,0.2)] active:scale-95">
+        <button className="w-full py-2.5 md:py-3.5 rounded-[12px] bg-gradient-to-b from-blue-600 to-[#111827] hover:from-blue-500 hover:to-[#1f2937] text-white font-black text-sm md:text-base transition-all shadow-[0_4px_20px_rgba(37,99,235,0.2)] active:scale-95 text-shadow-premium">
           Swap
         </button>
 
