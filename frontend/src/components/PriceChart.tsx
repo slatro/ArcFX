@@ -4,22 +4,23 @@ export const TradingViewChart = () => {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (container.current && !container.current.querySelector('script')) {
+    if (container.current) {
+      container.current.innerHTML = '';
       const script = document.createElement("script");
       script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
       script.type = "text/javascript";
       script.async = true;
       script.innerHTML = JSON.stringify({
         "autosize": true,
-        "symbol": "KRAKEN:EURCUSD",
-        "interval": "D",
+        "symbol": "COINBASE:EURCUSDC",
+        "interval": "240", // 4H
         "timezone": "Etc/UTC",
         "theme": "dark",
-        "style": "3",
+        "style": "1",
         "locale": "en",
         "enable_publishing": false,
-        "hide_top_toolbar": true,
-        "allow_symbol_change": false,
+        "hide_top_toolbar": false,
+        "allow_symbol_change": true,
         "save_image": false,
         "calendar": false,
         "hide_volume": true,
@@ -32,11 +33,8 @@ export const TradingViewChart = () => {
   }, []);
 
   return (
-    <div className="premium-card p-0 h-[500px] overflow-hidden animate-fade-in relative group" ref={container}>
-      <div className="tradingview-widget-container" style={{ height: "100%", width: "100%" }}>
-        <div className="tradingview-widget-container__widget" style={{ height: "calc(100% - 32px)", width: "100%" }}></div>
-      </div>
-      {/* Visual Polish Overlay */}
+    <div className="premium-card p-0 h-[500px] overflow-hidden animate-fade-in relative group" style={{ minHeight: '500px' }}>
+      <div id="tradingview_widget" ref={container} style={{ height: "100%", width: "100%" }}></div>
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
     </div>
   );
