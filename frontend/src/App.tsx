@@ -95,8 +95,8 @@ export default function App() {
           {/* Swap Column (Order-1 on mobile, Order-2 on desktop) */}
           <div className="flex flex-col items-center order-1 xl:order-2">
             <SwapCard slippage={slippage} setSlippage={setSlippage} />
-            {/* Sleek Horizontal Info Bar - SYNCHRONIZED ALIGNMENT */}
-            <div className="flex items-center gap-4 px-1 mt-5 text-[9px] font-bold text-white/20 uppercase tracking-widest">
+            {/* Sleek Horizontal Info Bar - RE-BALANCED ALIGNMENT */}
+            <div className="flex items-center gap-4 px-1 mt-8 text-[9px] font-bold text-white/20 uppercase tracking-widest">
               <div className="flex items-center gap-2">
                 <span>Slippage Tolerance</span>
                 <span className="text-blue-400">{slippage}%</span>
@@ -114,8 +114,8 @@ export default function App() {
             <div className="glass-frame h-[506px] xl:h-[506px]">
               <PriceChart />
             </div>
-            {/* Restored Chart Detail Bar - SYNCHRONIZED ALIGNMENT */}
-            <div className="flex items-center gap-4 mt-5 px-2">
+            {/* Restored Chart Detail Bar - RE-BALANCED ALIGNMENT */}
+            <div className="flex items-center gap-4 mt-2 px-2">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.05]">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Market Live</span>
