@@ -54,8 +54,8 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
         </div>
       </div>
       
-      {/* REVERTED TO GLASSY LOOK - NO MORE BLACK BOXES */}
-      <div className="bg-white/[0.03] border border-white/[0.08] backdrop-blur-md rounded-[12px] p-3.5 md:p-4 flex items-center justify-between hover:bg-white/[0.06] transition-all group">
+      {/* LIGHT & CLEAR GLASS BOXES - NO MORE GREY */}
+      <div className="bg-white/10 border border-white/[0.12] backdrop-blur-md rounded-[12px] p-3.5 md:p-4 flex items-center justify-between hover:bg-white/[0.15] transition-all group shadow-inner shadow-white/5">
         <button className="flex items-center gap-3 px-2 py-0.5 rounded-[12px] hover:bg-white/5 transition-all">
           <div className={`w-7 h-7 rounded-full ${iconColor} flex items-center justify-center shadow-lg shadow-black/20`}>
             <div className="w-3.5 h-3.5 rounded-full border-2 border-white/20" />
@@ -95,8 +95,8 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
         </button>
       </div>
 
-      {/* LAYER 2: MAIN ASSET CARD - ADJUSTED HEIGHT FOR PERFECT ALIGNMENT */}
-      <div className="premium-card p-5 md:p-6.5 flex flex-col relative">
+      {/* LAYER 2: MAIN ASSET CARD - EXTENDED TO MATCH TRADINGVIEW HEIGHT */}
+      <div className="premium-card p-6 md:p-8 flex flex-col relative">
         <TokenBox 
           type="From" 
           symbol="mEURC" 
@@ -107,10 +107,10 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
           isReadOnly={false}
         />
         
-        <div className="relative h-2 flex items-center justify-center my-4 md:my-5">
+        <div className="relative h-2 flex items-center justify-center my-6 md:my-8">
           <div className="absolute inset-x-0 h-px bg-white/[0.04]" />
-          <button className="z-10 w-7 h-7 rounded-full bg-[#0a0a0c] border border-white/[0.08] flex items-center justify-center text-blue-400 hover:scale-110 transition-transform shadow-lg">
-            <ArrowDown size={12} />
+          <button className="z-10 w-8 h-8 rounded-full bg-[#0a0a0c] border border-white/[0.08] flex items-center justify-center text-blue-400 hover:scale-110 transition-transform shadow-lg">
+            <ArrowDown size={14} />
           </button>
         </div>
 
