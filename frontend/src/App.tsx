@@ -3,6 +3,7 @@ import { Header } from "./components/Header";
 import { SwapCard } from "./components/SwapCard";
 import { TradingViewChart as PriceChart } from "./components/PriceChart";
 import { TransactionPanel } from "./components/TransactionPanel";
+import { Logo } from "./components/Logo";
 import { Zap, Info, Settings, ShieldCheck } from "lucide-react";
 
 export default function App() {
@@ -131,30 +132,9 @@ export default function App() {
 
       <footer className="py-12 px-8 border-t border-white/[0.05] bg-white/[0.01]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <div className="relative w-[48px] h-[48px] flex items-center justify-center shrink-0">
-                  <img 
-                    src="/assets/logo-real-final.jpg" 
-                    alt="ArcFX Logo"
-                    className="w-full h-full object-contain mix-blend-screen"
-                    style={{ 
-                      filter: 'contrast(1.6) brightness(0.85) saturate(1.1)',
-                      maskImage: 'radial-gradient(circle, black 60%, transparent 95%)',
-                      WebkitMaskImage: 'radial-gradient(circle, black 60%, transparent 95%)'
-                    }}
-                  />
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-light tracking-[0.25em] text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-300 to-slate-500 uppercase font-sans leading-none">
-                    ARC
-                  </span>
-                  <span className="text-xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-b from-blue-300 via-blue-500 to-blue-800 uppercase font-sans leading-none">
-                    FX
-                  </span>
-                </div>
-              </div>
-              <p className="text-[10px] text-white/30 font-bold max-w-xs uppercase tracking-[0.2em] mt-1">
+            <div className="flex flex-col gap-4 items-center md:items-start">
+              <Logo />
+              <p className="text-[10px] text-white/30 font-bold max-w-xs uppercase tracking-[0.2em] mt-1 text-center md:text-left">
                 Institutional Stablecoin Settlement Network
               </p>
             </div>
