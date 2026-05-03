@@ -33,7 +33,7 @@ export const TradingViewChart = () => {
   }, []);
 
   return (
-    <div className="premium-card p-0 h-[500px] overflow-hidden animate-fade-in relative group" style={{ minHeight: '500px' }}>
+    <div className="premium-card p-0 h-full overflow-hidden animate-fade-in relative group" style={{ minHeight: '500px' }}>
       <div id="tradingview_widget" ref={container} style={{ height: "100%", width: "100%" }}></div>
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
     </div>

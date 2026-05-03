@@ -97,7 +97,7 @@ export const SwapCard = () => {
       </div>
 
       <div className="mt-6 md:mt-8 flex flex-col gap-4">
-        <button className="btn-premium w-full py-4 md:py-5 text-[15px] font-black uppercase tracking-[0.4em] shadow-[0_0_50px_rgba(59,130,246,0.2)] h-14 md:h-16 flex items-center justify-center">
+        <button className="btn-premium w-full py-4 md:py-5 text-[15px] font-black uppercase tracking-[0.4em] h-14 md:h-16 flex items-center justify-center">
           <span className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] text-white/90">SWAP</span>
         </button>
 
