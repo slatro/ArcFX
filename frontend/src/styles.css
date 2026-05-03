@@ -73,7 +73,7 @@ body {
   stroke-dashoffset: 2000;
   animation: slitherArc 14s linear infinite;
   stroke-linecap: round;
-  stroke-width: 0.6px; /* Back to elegant thin lines */
+  stroke-width: 0.6px;
   filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
 }
 
@@ -92,35 +92,35 @@ body {
   to { transform: translate(40px, 40px); }
 }
 
+/* ULTIMATE FROSTED GLASS - Optimized for PC and Mobile */
 .premium-card {
-  @apply backdrop-blur-[100px] rounded-[32px] border border-white/[0.08] transition-all duration-700 relative overflow-hidden;
-  background: rgba(20, 20, 25, 0.4); 
+  @apply backdrop-blur-[80px] md:backdrop-blur-[120px] rounded-[32px] border border-white/[0.12] transition-all duration-700 relative overflow-hidden;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(20, 20, 25, 0.4) 100%);
   box-shadow: 
     0 40px 100px -20px rgba(0, 0, 0, 0.8),
-    inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
-/* 3D Glow for both PC and Mobile */
 .premium-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.05), transparent 70%);
+  background: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.08), transparent 70%);
   pointer-events: none;
 }
 
 .premium-card:hover, .premium-card:active {
-  @apply border-white/[0.18] bg-white/[0.07];
+  @apply border-white/[0.2] bg-white/[0.08];
   transform: translateY(-2px);
   box-shadow: 
     0 50px 120px -20px rgba(0, 0, 0, 0.9),
-    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+    inset 0 1px 2px rgba(255, 255, 255, 0.25);
 }
 
 .glass-frame {
-  @apply backdrop-blur-[60px] rounded-[32px] border border-white/[0.1] overflow-hidden transition-all duration-700;
+  @apply backdrop-blur-[60px] md:backdrop-blur-[100px] rounded-[32px] border border-white/[0.15] overflow-hidden transition-all duration-700;
   background: rgba(10, 10, 15, 0.5);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
 }
 
 .swap-input {
@@ -152,6 +152,7 @@ body {
   @apply text-white/90;
 }
 
+/* Ticker Animation */
 .animate-ticker {
   animation: ticker 60s linear infinite;
 }
