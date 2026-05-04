@@ -24,6 +24,10 @@ const TOKENS = [
 
 export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlippage: (val: string) => void }) => {
   const { address, isConnected } = useAccount();
+
+  useEffect(() => {
+    document.title = 'Swap | ArcFX Protocol';
+  }, []);
   const [fromAmount, setFromAmount] = useState('0');
   const [tokenIn, setTokenIn] = useState(TOKENS[1]); // Default EURC
   const [tokenOut, setTokenOut] = useState(TOKENS[0]); // Default USDC
