@@ -6,6 +6,14 @@ import { formatUnits } from 'viem';
 import { CONTRACT_ADDRESSES } from '../config/contracts';
 import ERC20_ABI from '../abis/ERC20.json';
 
+const TOKEN_ICONS: Record<string, string> = {
+  mUSDC: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/usdc.png',
+  mEURC: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/eur.png',
+  mTRYC: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/try.png',
+  mGBPC: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/gbp.png',
+  mJPYC: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/jpy.png',
+};
+
 export const Dashboard = () => {
   const { address, isConnected } = useAccount();
 
@@ -85,16 +93,10 @@ export const Dashboard = () => {
       if (!(window as any).ethereum) return;
       await (window as any).ethereum.request({
         method: 'wallet_watchAsset',
-        params: { type: 'ERC20', options: { address, symbol, decimals } },
+        params: { type: 'ERC20', options: { address, symbol, decimals, image: TOKEN_ICONS[symbol] } },
       });
     } catch (error) { console.error(error); }
   };
-
-  const activities = [
-    { type: 'SWAP', from: '1,250 mEURC', to: '1,345 mUSDC', time: '2 mins ago', status: 'Success' },
-    { type: 'ADD', from: '5,000 mUSDC', to: '4,250 mEURC', time: '15 mins ago', status: 'Success' },
-    { type: 'SWAP', from: '850 mUSDC', to: '720 mEURC', time: '1 hour ago', status: 'Success' },
-  ];
 
   return (
     <div className="w-full max-w-5xl mx-auto mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 pb-20">
@@ -112,15 +114,17 @@ export const Dashboard = () => {
 
         <div className="flex flex-col gap-2">
           {[
-            { symbol: 'mUSDC', balance: balanceUSDC, dec: 6, color: 'text-emerald-400', bg: 'bg-emerald-500/20', addr: CONTRACT_ADDRESSES.mUSDC },
-            { symbol: 'mEURC', balance: balanceEURC, dec: 18, color: 'text-blue-400', bg: 'bg-blue-500/20', addr: CONTRACT_ADDRESSES.mEURC },
-            { symbol: 'mTRYC', balance: balanceTRYC, dec: 18, color: 'text-red-400', bg: 'bg-red-500/20', addr: CONTRACT_ADDRESSES.mTRYC },
-            { symbol: 'mGBPC', balance: balanceGBPC, dec: 18, color: 'text-purple-400', bg: 'bg-purple-500/20', addr: CONTRACT_ADDRESSES.mGBPC },
-            { symbol: 'mJPYC', balance: balanceJPYC, dec: 18, color: 'text-orange-400', bg: 'bg-orange-500/20', addr: CONTRACT_ADDRESSES.mJPYC },
+            { symbol: 'mUSDC', balance: balanceUSDC, dec: 6, addr: CONTRACT_ADDRESSES.mUSDC },
+            { symbol: 'mEURC', balance: balanceEURC, dec: 18, addr: CONTRACT_ADDRESSES.mEURC },
+            { symbol: 'mTRYC', balance: balanceTRYC, dec: 18, addr: CONTRACT_ADDRESSES.mTRYC },
+            { symbol: 'mGBPC', balance: balanceGBPC, dec: 18, addr: CONTRACT_ADDRESSES.mGBPC },
+            { symbol: 'mJPYC', balance: balanceJPYC, dec: 18, addr: CONTRACT_ADDRESSES.mJPYC },
           ].map((token) => (
             <div key={token.symbol} className="bg-white/5 border border-white/10 rounded-xl p-3 hover:border-blue-500/30 transition-all group flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg ${token.bg} flex items-center justify-center ${token.color} text-[10px] font-bold`}>{token.symbol[1]}</div>
+                <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-white/5 p-1">
+                  <img src={TOKEN_ICONS[token.symbol]} alt={token.symbol} className="w-full h-full object-contain" />
+                </div>
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-white/80">{token.symbol}</span>
                   <button onClick={() => addTokenToWallet(token.addr, token.symbol, token.dec)} className="text-[9px] text-white/20 hover:text-white flex items-center gap-1 mt-0.5">
@@ -151,7 +155,11 @@ export const Dashboard = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          {activities.map((activity, i) => (
+          {[
+            { type: 'SWAP', from: '1,250 mEURC', to: '1,345 mUSDC', time: '2 mins ago', status: 'Success' },
+            { type: 'ADD', from: '5,000 mUSDC', to: '4,250 mEURC', time: '15 mins ago', status: 'Success' },
+            { type: 'SWAP', from: '850 mUSDC', to: '720 mEURC', time: '1 hour ago', status: 'Success' },
+          ].map((activity, i) => (
             <div key={i} className="grid grid-cols-12 items-center py-4 px-4 hover:bg-white/[0.02] rounded-xl transition-all border border-transparent hover:border-white/5 group">
               <div className="col-span-2 flex flex-col gap-1">
                 <span className={`text-[9px] font-black tracking-widest ${activity.type === 'SWAP' ? 'text-blue-400' : 'text-emerald-400'}`}>{activity.type}</span>
@@ -171,9 +179,6 @@ export const Dashboard = () => {
             </div>
           ))}
         </div>
-        <button className="w-full py-3 mt-4 rounded-xl border border-dashed border-white/10 text-[9px] font-bold text-white/20 uppercase tracking-widest hover:border-white/20 hover:text-white/40 transition-all flex items-center justify-center gap-2">
-           View All Transactions <ExternalLink size={10} />
-        </button>
       </div>
 
       <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 opacity-40 hover:opacity-80 transition-opacity">
