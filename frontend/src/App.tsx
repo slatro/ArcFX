@@ -54,10 +54,10 @@ export default function App() {
               href="https://faucet.circle.com/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-1.5 mt-[9px] rounded-xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] transition-all cursor-pointer"
+              className="flex items-center gap-2 px-3 py-1.5 mt-[9px] rounded-xl bg-blue-500/5 border border-blue-500/20 hover:bg-blue-500/10 transition-all cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.15)] group"
             >
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Faucet</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+              <span className="text-[9px] font-bold text-blue-400/80 uppercase tracking-widest group-hover:text-blue-400 transition-colors">Faucet</span>
             </a>
           </div>
 
@@ -66,9 +66,9 @@ export default function App() {
               <PriceChart />
             </div>
             <div className="flex items-center gap-4 mt-1 px-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.05]">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Market Live</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                <span className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-widest">Market Live</span>
               </div>
               <div className="h-4 w-px bg-white/10" />
               <div className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
