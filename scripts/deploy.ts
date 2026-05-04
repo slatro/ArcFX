@@ -32,19 +32,24 @@ async function main() {
   const mintAmountUSDC = ethers.parseUnits("1000000", 6);
   const mintAmountEURC = ethers.parseUnits("1000000", 18);
   console.log("Minting tokens...");
-  await usdc.mint(deployer.address, mintAmountUSDC);
-  await eurc.mint(deployer.address, mintAmountEURC);
+  const mintTx1 = await usdc.mint(deployer.address, mintAmountUSDC);
+  await mintTx1.wait();
+  const mintTx2 = await eurc.mint(deployer.address, mintAmountEURC);
+  await mintTx2.wait();
 
   // 5. Approve AMM
   console.log("Approving AMM...");
   const liqUSDC = ethers.parseUnits("10000", 6);
   const liqEURC = ethers.parseUnits("11730", 18); // ~1.173 rate
-  await usdc.approve(ammAddress, liqUSDC);
-  await eurc.approve(ammAddress, liqEURC);
+  const appTx1 = await usdc.approve(ammAddress, liqUSDC);
+  await appTx1.wait();
+  const appTx2 = await eurc.approve(ammAddress, liqEURC);
+  await appTx2.wait();
 
   // 6. Add initial liquidity
   console.log("Adding initial liquidity...");
-  await amm.addLiquidity(liqUSDC, liqEURC);
+  const liqTx = await amm.addLiquidity(liqUSDC, liqEURC);
+  await liqTx.wait();
   console.log("Initial liquidity added!");
 
   // 7. Save config for frontend
