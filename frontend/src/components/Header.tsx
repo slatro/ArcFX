@@ -46,7 +46,7 @@ export const Header = ({ activeTab, setActiveTab }: { activeTab: string, setActi
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 px-8 py-4 flex items-center justify-between bg-black/20 backdrop-blur-xl border-b border-white/5">
+      <header className="w-full z-50 px-8 py-5 flex items-center justify-between border-b border-white/5 relative bg-white/[0.02]">
         {/* LEFT SIDE: Logo & Navigation */}
         <div className="flex items-center gap-12">
           <Logo />
@@ -79,7 +79,7 @@ export const Header = ({ activeTab, setActiveTab }: { activeTab: string, setActi
             <span className="text-[9px] font-black uppercase tracking-[0.2em]">USDC Faucet</span>
           </button>
 
-          <div className="hidden lg:flex items-center gap-4 px-4 py-2 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-md opacity-40 hover:opacity-100 transition-opacity">
+          <div className="hidden lg:flex items-center gap-4 px-4 py-2 bg-white/[0.02] border border-white/5 rounded-2xl opacity-40 hover:opacity-100 transition-opacity">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
               <span className="text-[9px] font-bold text-white uppercase tracking-widest whitespace-nowrap">Arc Testnet</span>

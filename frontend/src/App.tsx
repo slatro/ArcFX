@@ -36,13 +36,9 @@ export default function App() {
         <div className="orb orb-2" />
       </div>
       
-      {/* HEADER IS FIXED */}
+      {/* HEADER & TICKER NOW FLOW NATURALLY (NOT FIXED) */}
       <Header activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      {/* SPACING FOR FIXED HEADER (80px) */}
-      <div className="h-[80px]" />
-
-      {/* ACTIVITY TICKER BAR - NOT FIXED, WILL SCROLL AWAY */}
       <div className="w-full bg-white/[0.02] border-b border-white/[0.05] py-3 px-8 relative overflow-hidden">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-12">
           <div className="flex items-center gap-3 shrink-0">
@@ -64,8 +60,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* MAIN CONTENT WITH ADEQUATE SPACING */}
-      <main className="flex-1 flex flex-col items-center relative py-12 px-4 md:px-6">
+      {/* MAIN CONTENT */}
+      <main className="flex-1 flex flex-col items-center relative py-8 px-4 md:px-6">
         {activeTab === 'swap' ? (
           <div className="w-full max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6 md:gap-12 items-stretch animate-in fade-in duration-700">
             
