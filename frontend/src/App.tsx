@@ -48,9 +48,9 @@ export default function App() {
       <main className="flex-1 flex flex-col items-center relative py-4 md:py-8 px-4 md:px-6">
         <div className="w-full max-w-[1600px] grid grid-cols-1 xl:grid-cols-[1fr_460px] gap-6 md:gap-8 items-stretch">
           
-          <div className="flex flex-col items-center order-1 xl:order-2">
+          <div className="flex flex-col items-center gap-4 order-1 xl:order-2">
             <SwapCard slippage={slippage} setSlippage={setSlippage} />
-            <div className="flex items-center h-[26px] gap-4 px-1 mt-[9px] py-1.5 text-[9px] font-bold text-white/20 uppercase tracking-widest">
+            <div className="flex items-center h-[26px] gap-4 px-1 mt-1 py-1.5 text-[9px] font-bold text-white/20 uppercase tracking-widest">
               <div className="flex items-center gap-2">
                 <span>Slippage Tolerance</span>
                 <span className="text-blue-400" style={{ color: '#FDF5E6' }}>{slippage}%</span>
