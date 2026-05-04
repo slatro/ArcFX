@@ -18,10 +18,6 @@ const TOKEN_ICONS: Record<string, string> = {
 export const Dashboard = () => {
   const { address, isConnected } = useAccount();
 
-  React.useEffect(() => {
-    document.title = 'Dashboard | ArcFX Protocol';
-  }, []);
-
   // 1. Balances
   const { data: balanceUSDC, refetch: refetchUSDC } = useReadContract({
     address: CONTRACT_ADDRESSES.mUSDC as `0x${string}`,

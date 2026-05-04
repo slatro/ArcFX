@@ -8,6 +8,7 @@
     "declaration": true,
     "sourceMap": true,
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
     "rootDir": "."
   },
