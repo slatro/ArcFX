@@ -9,8 +9,9 @@ import ERC20_ABI from '../abis/ERC20.json';
 const TOKENS = [
   { symbol: 'mUSDC', name: 'Arc Dollar', decimals: 6, color: 'bg-emerald-500', addr: CONTRACT_ADDRESSES.mUSDC },
   { symbol: 'mEURC', name: 'Arc Euro', decimals: 18, color: 'bg-blue-600', addr: CONTRACT_ADDRESSES.mEURC },
-  { symbol: 'mTRY', name: 'Arc Lira', decimals: 18, color: 'bg-red-500', addr: (CONTRACT_ADDRESSES as any).mTRY },
-  { symbol: 'mGBP', name: 'Arc Pound', decimals: 18, color: 'bg-purple-600', addr: (CONTRACT_ADDRESSES as any).mGBP },
+  { symbol: 'mTRYC', name: 'Arc Lira', decimals: 18, color: 'bg-red-500', addr: CONTRACT_ADDRESSES.mTRYC },
+  { symbol: 'mGBPC', name: 'Arc Pound', decimals: 18, color: 'bg-purple-600', addr: CONTRACT_ADDRESSES.mGBPC },
+  { symbol: 'mJPYC', name: 'Arc Yen', decimals: 18, color: 'bg-orange-500', addr: CONTRACT_ADDRESSES.mJPYC },
 ];
 
 export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlippage: (val: string) => void }) => {
@@ -199,7 +200,6 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
 
   return (
     <div className="flex flex-col h-[506px] w-full max-w-[480px] justify-between group/card">
-      {/* HEADER CARD */}
       <div className="premium-card p-4 flex items-center justify-between relative shrink-0">
         <div className="flex items-center gap-2 pl-2">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
@@ -210,7 +210,6 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
         </button>
       </div>
 
-      {/* INPUT CARD */}
       <div className="premium-card p-5 flex-1 flex flex-col justify-center relative mx-0 my-[6px]">
         <TokenBox 
           type="From" 
@@ -241,7 +240,6 @@ export const SwapCard = ({ slippage, setSlippage }: { slippage: string, setSlipp
         />
       </div>
 
-      {/* FOOTER ACTION CARD */}
       <div className="premium-card p-5 flex flex-col gap-4 shrink-0">
         <div className="flex justify-between items-center px-1">
           <div className="flex items-center gap-2">
