@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ArrowUpDown, Settings, ChevronDown, Wallet, Edit2, RefreshCw, Loader2, ArrowRight, Zap, TrendingUp, ShieldCheck, Droplets } from 'lucide-react';
+import { ArrowUpDown, Settings, ChevronDown, Wallet, Edit2, RefreshCw, Loader2, ArrowRight, Zap, TrendingUp, ShieldCheck, Droplets, AlertCircle } from 'lucide-react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance, useGasPrice, useReadContracts, useSignMessage } from 'wagmi';
 import { formatUnits, parseUnits, maxUint256 } from 'viem';
 import { CONTRACT_ADDRESSES, TOKENS } from '../config/contracts';
@@ -40,7 +40,7 @@ const TokenBox = ({ type, token, amount, setAmount, isReadOnly, userAddress, onT
           </span>
         </div>
       </div>
-      
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
           {type === 'From' ? (
@@ -53,8 +53,8 @@ const TokenBox = ({ type, token, amount, setAmount, isReadOnly, userAddress, onT
               className="w-full bg-transparent text-2xl font-black text-white outline-none placeholder:text-white/10 tabular-nums"
             />
           ) : (
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={amount}
               readOnly
               placeholder="0.00"
@@ -62,9 +62,9 @@ const TokenBox = ({ type, token, amount, setAmount, isReadOnly, userAddress, onT
             />
           )}
         </div>
-        
+
         <div className="relative">
-          <button 
+          <button
             disabled={isLocked}
             onClick={(e) => { e.stopPropagation(); !isLocked && onTokenSelect.onToggle(); }}
             className={`flex items-center gap-2 px-3 py-2 w-[130px] justify-between rounded-xl bg-white/10 border border-white/10 transition-all ${isLocked ? 'cursor-not-allowed opacity-80' : 'hover:bg-white/20 hover:scale-105 active:scale-95'}`}
@@ -87,21 +87,21 @@ const TokenBox = ({ type, token, amount, setAmount, isReadOnly, userAddress, onT
             {!isLocked && <ChevronDown size={14} className="text-white/40" />}
           </button>
           {onTokenSelect.isOpen && (
-            <div 
+            <div
               onClick={(e) => e.stopPropagation()}
               className="absolute top-[110%] left-1/2 -translate-x-1/2 w-[130px] z-[9999] p-1 bg-[#1a1a1a] border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.9)] rounded-xl animate-in fade-in zoom-in-95 duration-150"
             >
-               <div className="flex flex-col">
-                  {onTokenSelect.tokens.map((t: any) => (
-                    <button key={t.symbol} onClick={() => { onTokenSelect.onSelect(t); }} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/10 transition-all group">
-                      <div className="flex items-center gap-2">
-                        <img src={t.logo} alt="" className="w-4 h-4 rounded-full" />
-                        <span className="text-[10px] font-black text-white">{t.symbol}</span>
-                      </div>
-                      {token?.symbol === t.symbol && <div className="w-1 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />}
-                    </button>
-                  ))}
-               </div>
+              <div className="flex flex-col">
+                {onTokenSelect.tokens.map((t: any) => (
+                  <button key={t.symbol} onClick={() => { onTokenSelect.onSelect(t); }} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/10 transition-all group">
+                    <div className="flex items-center gap-2">
+                      <img src={t.logo} alt="" className="w-4 h-4 rounded-full" />
+                      <span className="text-[10px] font-black text-white">{t.symbol}</span>
+                    </div>
+                    {token?.symbol === t.symbol && <div className="w-1 h-1 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -110,13 +110,13 @@ const TokenBox = ({ type, token, amount, setAmount, isReadOnly, userAddress, onT
   );
 };
 
-export const SwapCard = ({ 
+export const SwapCard = ({
   tokenIn,
   setTokenIn,
   tokenOut,
   setTokenOut,
   initialMode
-}: { 
+}: {
   tokenIn: any,
   setTokenIn: (t: any) => void,
   tokenOut: any,
@@ -131,7 +131,7 @@ export const SwapCard = ({
   const [limitPrice, setLimitPrice] = useState('');
   const [activeTab, setActiveTab] = useState<'market' | 'limit' | 'stake'>((initialMode as any) || 'market');
   const [localAllowanceOverride, setLocalAllowanceOverride] = useState(false);
-  
+
   useEffect(() => {
     setLocalAllowanceOverride(false);
   }, [address]);
@@ -198,7 +198,7 @@ export const SwapCard = ({
   const stakingToAmountRaw = useMemo(() => {
     if (!fromAmount || isNaN(parseFloat(fromAmount)) || !tokenIn || !tokenOut) return 0n;
     const amountIn = parseUnits(fromAmount, tokenIn.decimals);
-    
+
     // Calculate scaling factor between tokens
     const decimalsIn = tokenIn.decimals;
     const decimalsOut = tokenOut.decimals;
@@ -206,15 +206,15 @@ export const SwapCard = ({
     const scale = 10n ** BigInt(Math.abs(diff));
 
     if (isUnstake) {
-       // astUSDC -> USDC
-       // apply exchange rate then scale up/down
-       const raw = (amountIn * exchangeRate) / 1000000n;
-       return diff > 0 ? raw / scale : raw * scale;
+      // astUSDC -> USDC
+      // apply exchange rate then scale up/down
+      const raw = (amountIn * exchangeRate) / 1000000n;
+      return diff > 0 ? raw / scale : raw * scale;
     } else {
-       // USDC -> astUSDC
-       // apply inverse exchange rate then scale up/down
-       const raw = (amountIn * 1000000n) / exchangeRate;
-       return diff > 0 ? raw / scale : raw * scale;
+      // USDC -> astUSDC
+      // apply inverse exchange rate then scale up/down
+      const raw = (amountIn * 1000000n) / exchangeRate;
+      return diff > 0 ? raw / scale : raw * scale;
     }
   }, [fromAmount, tokenIn, tokenOut, exchangeRate, isUnstake]);
 
@@ -240,9 +240,9 @@ export const SwapCard = ({
     return pairAddressRaw as `0x${string}`;
   }, [pairAddressRaw]);
 
-  const spenderAddress = activeTab === 'limit' ? (pairAddress as `0x${string}`) : 
-                       (activeTab === 'stake' ? (CONTRACT_ADDRESSES as any).STAKING_CONTRACT as `0x${string}` : 
-                       (CONTRACT_ADDRESSES.ROUTER as `0x${string}`));
+  const spenderAddress = activeTab === 'limit' ? (pairAddress as `0x${string}`) :
+    (activeTab === 'stake' ? (CONTRACT_ADDRESSES as any).STAKING_CONTRACT as `0x${string}` :
+      (CONTRACT_ADDRESSES.ROUTER as `0x${string}`));
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: tokenIn?.addr as `0x${string}`,
@@ -267,9 +267,9 @@ export const SwapCard = ({
   }, [fromAmount, balanceIn, tokenIn]);
 
   const needsApproval = isConnected && !localAllowanceOverride && !insufficientBalance && (
-    allowance !== undefined && 
+    allowance !== undefined &&
     tokenIn &&
-    typeof allowance === 'bigint' && 
+    typeof allowance === 'bigint' &&
     allowance < parseUnits(fromAmount || '0', tokenIn?.decimals || 18)
   );
 
@@ -311,7 +311,7 @@ export const SwapCard = ({
 
   const priceContext = usePrices();
   const prices = priceContext?.prices || {};
-  const recordTrade = priceContext?.recordTrade || (() => {});
+  const recordTrade = priceContext?.recordTrade || (() => { });
   const { data: gasPrice } = useGasPrice();
 
   // --- DYNAMIC RESERVES & QUOTES ---
@@ -359,16 +359,17 @@ export const SwapCard = ({
     if (activeTab === 'stake') return formatUnits(stakingToAmountRaw, tokenOut.decimals);
     const baseAmount = (poolAmountOut && (poolAmountOut as bigint) > 0n) ? (poolAmountOut as bigint) : visualToAmountRaw;
     if (baseAmount === 0n || !tokenOut) return '0.00';
-    const slippageVal = parseFloat(internalSlippage) / 100;
+    const slippagePercent = isAutoSlippage ? 0.5 : (parseFloat(internalSlippage) || 0.5);
+    const slippageVal = slippagePercent / 100;
     const factor = BigInt(Math.floor((1 - slippageVal) * 10000));
     return formatUnits((baseAmount * factor) / 10000n, tokenOut.decimals);
-  }, [poolAmountOut, visualToAmountRaw, tokenOut, internalSlippage, activeTab, stakingToAmountRaw]);
+  }, [poolAmountOut, visualToAmountRaw, tokenOut, internalSlippage, isAutoSlippage, activeTab, stakingToAmountRaw]);
 
   // --- ROBUST PRICE IMPACT CALCULATION ---
   const priceImpact = useMemo(() => {
     if (activeTab === 'stake') return "0.000";
     if (!fromAmount || isNaN(parseFloat(fromAmount)) || !poolReserves || poolReserves.in === 0n) return "0.000";
-    
+
     try {
       const amountIn = parseUnits(fromAmount, tokenIn.decimals);
       const multiplier = 1000000n;
@@ -397,11 +398,11 @@ export const SwapCard = ({
       if (usdValue > 0) recordTrade(usdValue);
       const actionType = activeTab === 'limit' ? 'Limit Order' : (activeTab === 'stake' ? (isUnstake ? 'Unstaked' : 'Staked') : 'Swap');
       const assetStr = activeTab === 'limit' ? `${tokenIn?.symbol} / ${tokenOut?.symbol}` : tokenIn?.symbol;
-      
+
       play('success');
-      triggerIsland('success', `${actionType === 'Swap' ? 'Swap' : actionType} Successful`, actionHash, { 
-        type: activeTab === 'limit' ? 'Limit Order' : (activeTab === 'stake' ? (isUnstake ? 'Unstaked' : 'Staked') : 'Swap'), 
-        asset: assetStr, 
+      triggerIsland('success', `${actionType === 'Swap' ? 'Swap' : actionType} Successful`, actionHash, {
+        type: activeTab === 'limit' ? 'Limit Order' : (activeTab === 'stake' ? (isUnstake ? 'Unstaked' : 'Staked') : 'Swap'),
+        asset: assetStr,
         amount: fromAmount,
         price: activeTab === 'limit' ? limitPrice : undefined
       });
@@ -410,7 +411,6 @@ export const SwapCard = ({
   }, [isActionSuccess, actionHash]);
 
   const handleAction = async () => {
-    play('click');
     if (!isConnected || !address || !tokenIn || !tokenOut) return;
     if (needsApproval && tokenIn && spenderAddress) {
       triggerIsland('processing', `Authorizing ${tokenIn.symbol}...`);
@@ -419,29 +419,29 @@ export const SwapCard = ({
       const actionType = activeTab === 'limit' ? 'Limit Order' : (activeTab === 'stake' ? (isUnstake ? 'Unstaked' : 'Staked') : 'Swap');
       const msg = activeTab === 'limit' ? 'Placing Limit Order...' : (activeTab === 'stake' ? (isUnstake ? 'Unstaking Assets...' : 'Staking Assets...') : 'Swapping Tokens...');
       const assetStr = activeTab === 'limit' ? `${tokenIn?.symbol} / ${tokenOut?.symbol}` : tokenIn?.symbol;
-      
-      triggerIsland('processing', msg, undefined, { 
-        type: actionType, 
-        asset: assetStr, 
-        amount: fromAmount, 
-        price: activeTab === 'limit' ? limitPrice : undefined 
+
+      triggerIsland('processing', msg, undefined, {
+        type: actionType,
+        asset: assetStr,
+        amount: fromAmount,
+        price: activeTab === 'limit' ? limitPrice : undefined
       });
-      
+
       const stableId = `limit-${Date.now()}`;
       if (activeTab === 'limit') {
         // Simulated Signature-based Limit Order
         try {
           triggerIsland('processing', `Authorizing Order via Signature...`, stableId);
           const msgToSign = `ArcFX Limit Order\nAction: SELL ${fromAmount} ${tokenIn.symbol}\nTarget: ${limitPrice} ${tokenOut.symbol}\nExpiry: 7 Days\nNonce: ${Date.now()}`;
-          
+
           signMessage({ message: msgToSign }, {
             onSuccess: (sig) => {
               const mockHash = `0x${sig.slice(2, 66)}`; // Use part of signature as mock hash
-              triggerIsland('success', `Limit Order Authorized & Placed`, stableId, { 
-                type: 'Limit Order', 
-                asset: assetStr, 
-                amount: fromAmount, 
-                price: limitPrice 
+              triggerIsland('success', `Limit Order Authorized & Placed`, stableId, {
+                type: 'Limit Order',
+                asset: assetStr,
+                amount: fromAmount,
+                price: limitPrice
               });
             },
             onError: (err) => {
@@ -452,19 +452,19 @@ export const SwapCard = ({
           triggerIsland('error', 'Auth Failed', stableId, { type: 'Limit Order' });
         }
       } else if (activeTab === 'stake') {
-        actionWrite({ 
-          address: (CONTRACT_ADDRESSES as any).STAKING_CONTRACT as `0x${string}`, 
-          abi: STAKING_ABI.abi || STAKING_ABI as any, 
-          functionName: isUnstake ? 'unstake' : 'stake', 
-          args: [parseUnits(fromAmount, tokenIn.decimals)] 
+        actionWrite({
+          address: (CONTRACT_ADDRESSES as any).STAKING_CONTRACT as `0x${string}`,
+          abi: STAKING_ABI.abi || STAKING_ABI as any,
+          functionName: isUnstake ? 'unstake' : 'stake',
+          args: [parseUnits(fromAmount, tokenIn.decimals)]
         });
       } else {
         const minOutRaw = parseUnits(minReceived, tokenOut.decimals);
-        actionWrite({ 
-          address: CONTRACT_ADDRESSES.ROUTER as `0x${string}`, 
-          abi: ROUTER_ABI.abi || ROUTER_ABI as any, 
-          functionName: 'swapExactTokensForTokens', 
-          args: [parseUnits(fromAmount, tokenIn.decimals), minOutRaw, [tokenIn.addr, tokenOut.addr], address, BigInt(Math.floor(Date.now() / 1000) + 1200)] 
+        actionWrite({
+          address: CONTRACT_ADDRESSES.ROUTER as `0x${string}`,
+          abi: ROUTER_ABI.abi || ROUTER_ABI as any,
+          functionName: 'swapExactTokensForTokens',
+          args: [parseUnits(fromAmount, tokenIn.decimals), minOutRaw, [tokenIn.addr, tokenOut.addr], address, BigInt(Math.floor(Date.now() / 1000) + 1200)]
         });
       }
     }
@@ -480,16 +480,30 @@ export const SwapCard = ({
         </div>
         <button onClick={() => setShowSettings(!showSettings)} className={`p-2 rounded-xl transition-all z-20 ${showSettings ? 'text-white bg-white/10' : 'text-white/20 hover:text-white'}`}><Settings size={14} /></button>
         {showSettings && (
-          <div className="absolute top-12 right-1 w-48 glass-frame p-3 z-[70] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200 shadow-2xl backdrop-blur-3xl bg-black/80 border-white/20">
-            <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Slippage Settings</span>
-            <div className="flex p-0.5 bg-white/5 rounded-xl">
-              <button onClick={() => setIsAutoSlippage(true)} className={`flex-1 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${isAutoSlippage ? 'bg-white text-black' : 'text-white/40'}`}>Auto</button>
-              <button onClick={() => setIsAutoSlippage(false)} className={`flex-1 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all ${!isAutoSlippage ? 'bg-white text-black' : 'text-white/40'}`}>Custom</button>
+          <div className="absolute top-12 right-1 w-48 p-3 z-[70] flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-[#050505] border border-white/20 rounded-2xl">
+            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest px-1">Slippage</span>
+            <div className="flex p-1 bg-white/5 rounded-xl">
+              <button onClick={() => setIsAutoSlippage(true)} className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${isAutoSlippage ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white/60'}`}>Auto</button>
+              <button onClick={() => setIsAutoSlippage(false)} className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${!isAutoSlippage ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white/60'}`}>Custom</button>
             </div>
             {!isAutoSlippage && (
-              <div className="flex items-center justify-between px-2 py-1.5 bg-white/5 rounded-xl border border-white/10">
-                <input value={internalSlippage} onChange={(e) => setInternalSlippage(e.target.value)} className="bg-transparent text-[10px] font-black text-white outline-none w-12 tabular-nums" />
-                <span className="text-[10px] font-black text-white/20">%</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between px-3 py-2 bg-white/5 rounded-xl border border-white/10 group focus-within:border-white/20 transition-all">
+                  <input
+                    type="number"
+                    value={internalSlippage}
+                    onChange={(e) => setInternalSlippage(e.target.value)}
+                    className="bg-transparent text-[12px] font-black text-white outline-none w-full tabular-nums"
+                    placeholder="0.5"
+                  />
+                  <span className="text-[10px] font-black text-white/20">%</span>
+                </div>
+                {parseFloat(internalSlippage) > 3 && (
+                  <div className="flex items-center gap-1.5 px-1 animate-pulse">
+                    <AlertCircle size={10} className="text-rose-500" />
+                    <span className="text-[8px] font-bold text-rose-500 uppercase">High Risk Setting</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -497,35 +511,35 @@ export const SwapCard = ({
       </div>
 
       <div className="premium-card h-[376px] p-6 flex flex-col justify-between relative z-20">
-        <div className="flex flex-col gap-6 relative z-30">
+        <div className="flex flex-col gap-4 relative z-30">
           <div className={`relative ${isSelectOpen === 'in' ? 'z-[50]' : 'z-10'}`}>
             <TokenBox type="From" token={tokenIn} amount={fromAmount} setAmount={setFromAmount} isReadOnly={false} userAddress={address} onTokenSelect={{ isOpen: isSelectOpen === 'in', onToggle: () => toggleSelect('in'), onSelect: (t: any) => { if (tokenOut?.symbol === t.symbol) setTokenOut(null); setTokenIn(t); setIsSelectOpen(null); }, tokens: filteredTokens }} isLocked={activeTab === 'stake'} />
           </div>
           <div className="relative h-2 flex items-center justify-center my-1 z-0">
-            <button onClick={() => { const t = tokenIn; setTokenIn(tokenOut); setTokenOut(t); if (activeTab === 'stake') setIsUnstake(!isUnstake); }} className="z-10 w-9 h-9 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center transition-all shadow-xl hover:scale-110 active:scale-95 group backdrop-blur-xl"><ArrowUpDown size={12} className="text-white/30 group-hover:text-white" /></button>
+            <button onClick={() => { const t = tokenIn; setTokenIn(tokenOut); setTokenOut(t); if (activeTab === 'stake') setIsUnstake(!isUnstake); }} className="z-10 w-8 h-8 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center transition-all shadow-xl hover:scale-110 active:scale-95 group backdrop-blur-xl"><ArrowUpDown size={11} className="text-white/30 group-hover:text-white" /></button>
           </div>
           <div className={`relative ${isSelectOpen === 'out' ? 'z-[50]' : 'z-10'}`}>
             <TokenBox type="To" token={tokenOut} amount={toAmount} setAmount={() => {}} isReadOnly={true} userAddress={address} onTokenSelect={{ isOpen: isSelectOpen === 'out', onToggle: () => toggleSelect('out'), onSelect: (t: any) => { if (tokenIn?.symbol === t.symbol) setTokenIn(null); setTokenOut(t); setIsSelectOpen(null); }, tokens: filteredTokens }} isLocked={activeTab === 'stake'} />
           </div>
         </div>
 
-        <div className="relative z-10 space-y-3 px-1">
+        <div className="relative z-10 space-y-2 px-1">
           {activeTab === 'limit' ? (
-             <div className="flex items-center justify-between p-4 bg-transparent border border-white/5 rounded-2xl group transition-all hover:bg-white/[0.02] hover:border-white/10">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Limit Price</span>
-                  <div className="flex items-center gap-1">
-                    <Zap size={10} className="text-orange-400 opacity-50" />
-                    <span className="text-[7px] font-bold text-orange-400/60 uppercase tracking-widest">Fixed Execution</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <input value={limitPrice} onChange={(e) => setLimitPrice(e.target.value)} className="bg-transparent text-lg font-black text-white text-right outline-none w-24 tabular-nums placeholder:text-white/10" placeholder="0.0000" />
-                  <div className="flex flex-col items-end"><span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter">{tokenOut?.symbol || '...'}</span><span className="text-[7px] font-bold text-white/10 uppercase">Target</span></div>
+            <div className="flex items-center justify-between p-3 bg-transparent border border-white/5 rounded-2xl group transition-all hover:bg-white/[0.02] hover:border-white/10">
+              <div className="flex flex-col gap-1">
+                <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Limit Price</span>
+                <div className="flex items-center gap-1">
+                  <Zap size={10} className="text-orange-400 opacity-50" />
+                  <span className="text-[7px] font-bold text-orange-400/60 uppercase tracking-widest">Fixed Execution</span>
                 </div>
               </div>
+              <div className="flex items-center gap-3">
+                <input value={limitPrice} onChange={(e) => setLimitPrice(e.target.value)} className="bg-transparent text-lg font-black text-white text-right outline-none w-24 tabular-nums placeholder:text-white/10" placeholder="0.0000" />
+                <div className="flex flex-col items-end"><span className="text-[9px] font-black text-blue-400 uppercase tracking-tighter">{tokenOut?.symbol || '...'}</span><span className="text-[7px] font-bold text-white/10 uppercase">Target</span></div>
+              </div>
+            </div>
           ) : activeTab === 'market' ? (
-            <div className="flex flex-col gap-2 py-1 px-1 mt-3 animate-in fade-in slide-in-from-top-1 duration-400">
+            <div className="flex flex-col gap-1 py-1 px-1 mt-2 animate-in fade-in slide-in-from-top-1 duration-400">
               <div className="flex justify-between items-center group/item">
                 <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Price Impact</span>
                 <span className={`text-[10px] font-black tabular-nums ${parseFloat(priceImpact) > 1 ? 'text-red-500' : (parseFloat(priceImpact) > 0.1 ? 'text-red-400/70' : 'text-emerald-400/90')}`}>
@@ -533,23 +547,29 @@ export const SwapCard = ({
                 </span>
               </div>
               <div className="flex justify-between items-center group/item">
+                <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Slippage Tolerance</span>
+                <span className={`text-[10px] font-black tabular-nums ${parseFloat(internalSlippage) > 3 ? 'text-rose-400' : 'text-white/60'}`}>
+                  {isAutoSlippage ? 'Auto' : `${internalSlippage}%`}
+                </span>
+              </div>
+              <div className="flex justify-between items-center group/item">
                 <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Min. Received</span>
                 <div className="flex items-center gap-1.5"><span className="text-[10px] font-black text-white/60 tabular-nums italic">{parseFloat(minReceived).toLocaleString(undefined, { maximumFractionDigits: 4 })}</span><span className="text-[8px] font-black text-blue-400/40 uppercase">{tokenOut?.symbol || '...'}</span></div>
               </div>
-              <div className="mt-1 pt-2 border-t border-white/[0.03] flex justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
+              <div className="mt-1 pt-1.5 border-t border-white/[0.03] flex justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
                 <span className="text-[7px] font-bold text-white uppercase tracking-widest">Est. Fees</span>
                 <span className="text-[8px] font-black text-white/60 tabular-nums">0.10% + {networkFee}</span>
               </div>
             </div>
           ) : activeTab === 'stake' ? (
-            <div className="flex flex-col gap-3 py-2 px-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="flex flex-col gap-2 py-1 px-1 animate-in fade-in slide-in-from-bottom-2 duration-500">
                <div className="flex justify-between items-center group">
                 <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400/20 flex items-center justify-center"><div className="w-0.5 h-0.5 rounded-full bg-emerald-400" /></div><span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Estimated APY</span></div>
                 <span className="text-[11px] font-black text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.2)] tabular-nums">12.54%</span>
               </div>
               <div className="flex justify-between items-center group">
                 <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-purple-400/20 flex items-center justify-center"><div className="w-0.5 h-0.5 rounded-full bg-purple-400" /></div><span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em]">Total Staked</span></div>
-                <div className="flex flex-col items-end"><span className="text-[10px] font-black text-white/70 tabular-nums">${parseFloat(formatUnits(totalStaked, 18)).toLocaleString()}</span><span className="text-[7px] font-bold text-white/10 uppercase">TVL Pool</span></div>
+                <div className="flex flex-col items-end"><span className="text-[10px] font-black text-white/70 tabular-nums">${parseFloat(formatUnits(totalStaked, 6)).toLocaleString()}</span><span className="text-[7px] font-bold text-white/10 uppercase">TVL Pool</span></div>
               </div>
             </div>
           ) : null}
@@ -557,7 +577,16 @@ export const SwapCard = ({
       </div>
 
       <div className="premium-card p-4 flex items-center justify-center relative z-10">
-        <button onClick={handleAction} disabled={!isConnected || !fromAmount || insufficientBalance || isActionPending || isApprovePending || !tokenIn || !tokenOut} className={`w-[92%] py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all duration-700 relative overflow-hidden group border ${(!isConnected || !fromAmount || insufficientBalance || isActionPending || isApprovePending || !tokenIn || !tokenOut) ? 'bg-white/[0.02] text-white/10 cursor-not-allowed border-white/5 shadow-none' : 'bg-white text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] border-white'}`}>
+        <button
+          onClick={handleAction}
+          disabled={!isConnected || !fromAmount || insufficientBalance || isActionPending || isApprovePending || !tokenIn || !tokenOut}
+          className={`w-[92%] py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all duration-700 relative overflow-hidden group border ${(!isConnected || !fromAmount || insufficientBalance || isActionPending || isApprovePending || !tokenIn || !tokenOut)
+              ? 'bg-white/[0.02] text-white/10 cursor-not-allowed border-white/5 shadow-none'
+              : (parseFloat(internalSlippage) > 3
+                ? 'bg-rose-500 text-white hover:bg-rose-600 border-rose-400 shadow-[0_0_40px_rgba(244,63,94,0.3)]'
+                : 'bg-white text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] border-white')
+            }`}
+        >
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           {isActionPending || isActionConfirming || isApprovePending || isApproveConfirming ? (
             <><Loader2 className="animate-spin" size={16} strokeWidth={3} /><span className="tracking-[0.5em] font-black text-[10px]">PROCESSING</span></>
@@ -571,22 +600,12 @@ export const SwapCard = ({
             <span className="tracking-[0.3em] font-black text-[10px] text-red-500/80">INSUFFICIENT BALANCE</span>
           ) : needsApproval ? (
             <span className="tracking-[0.5em] font-black text-[10px]">APPROVE {tokenIn.symbol}</span>
+          ) : parseFloat(internalSlippage) > 3 ? (
+            <span className="tracking-[0.3em] font-black text-[10px] uppercase">HIGH SLIPPAGE RISK</span>
           ) : (
             <span className="tracking-[0.6em] font-black text-[10px] uppercase">{activeTab === 'stake' ? (isUnstake ? 'UNSTAKE' : 'STAKE') : activeTab === 'limit' ? 'PLACE ORDER' : 'SWAP'}</span>
           )}
         </button>
-      </div>
-      <div className="flex flex-col gap-1 mt-2">
-        <div className="w-full h-[1px] bg-white/[0.03] relative overflow-hidden">
-          <div className="absolute top-0 h-full w-24 bg-gradient-to-r from-transparent via-blue-400/40 to-transparent animate-scan-line" />
-        </div>
-        <div className="flex justify-between items-center px-1 opacity-20">
-          <span className="text-[6px] font-black text-white uppercase tracking-[0.4em]">ARCFX DATA PULSE</span>
-          <div className="flex items-center gap-1">
-            <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[6px] font-black text-emerald-400 uppercase tracking-[0.2em]">NETWORK ACTIVE</span>
-          </div>
-        </div>
       </div>
     </div>
   );

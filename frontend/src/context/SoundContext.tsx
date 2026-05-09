@@ -9,11 +9,11 @@ interface SoundContextType {
 const SoundContext = createContext<SoundContextType | undefined>(undefined);
 
 const SOUND_URLS: Record<SoundType, string> = {
-  success: 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3', // Coin Clink
+  success: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3', // Digital Success
   click: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3',   // Interface Click
   error: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',   // Error/Thud
-  processing: 'https://assets.mixkit.co/active_storage/sfx/2567/2567-preview.mp3', // Subtle hum/process
-  points: 'https://assets.mixkit.co/active_storage/sfx/2436/2436-preview.mp3'    // Level up/Point gain
+  processing: 'https://assets.mixkit.co/active_storage/sfx/2567/2567-preview.mp3', // Subtle hum
+  points: 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3'    // Digital Point Gain
 };
 
 export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -24,7 +24,7 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Lazy load audio
       if (!audioRefs.current[type]) {
         audioRefs.current[type] = new Audio(SOUND_URLS[type]);
-        audioRefs.current[type]!.volume = type === 'click' ? 0.1 : 0.25;
+        audioRefs.current[type]!.volume = type === 'click' ? 0.03 : 0.1; // MUCH LOWER VOLUME
       }
 
       const audio = audioRefs.current[type]!;

@@ -99,14 +99,12 @@ export default function App() {
                 <div className="max-w-[1600px] mx-auto px-8 pt-7 pb-10">
                   {renderContent()}
                   
-                  {activeTab === 'swap' && (
-                    <div className="mt-12 space-y-12 animate-in fade-in duration-700">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                         <LimitOrders />
-                         <TransactionHistory />
-                      </div>
+                  <div className={activeTab === 'swap' ? 'mt-12 space-y-12 animate-in fade-in duration-700 block' : 'hidden'}>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                       <LimitOrders />
+                       <TransactionHistory />
                     </div>
-                  )}
+                  </div>
                 </div>
               </main>
 

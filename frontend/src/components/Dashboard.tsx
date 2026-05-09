@@ -432,7 +432,6 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
 
   const handleCheckIn = () => {
     if (!isCheckInAvailable) return;
-    play('click');
     const ref = localStorage.getItem('arc_pending_ref') || '0x0000000000000000000000000000000000000000';
     checkInWrite({
       address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
@@ -518,8 +517,6 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
           value={userPoints !== undefined ? (Number(userPoints) + localPointsOffset).toString() : '...'}
           isSpecial={true}
           color="bg-blue-500/10 text-blue-400"
-          onAction={isCheckInAvailable ? handleCheckIn : undefined}
-          actionLabel={isCheckingIn || isCheckInConfirming ? "Claiming..." : "Claim Points"}
           extraInfo={!isCheckInAvailable && snapshotCountdown ? `Next: ${snapshotCountdown}` : undefined}
           pendingAmount={pendingPoints}
         />

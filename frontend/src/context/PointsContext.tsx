@@ -69,7 +69,7 @@ export const PointsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (isStake) label = '+5 Staking Points Earned!';
         
         play('points');
-        notify('success', label, `${type} activity recorded.`);
+        notify({ type: 'success', title: label, message: `${type} activity recorded.` });
       }
     };
     

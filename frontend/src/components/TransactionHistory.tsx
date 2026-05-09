@@ -27,80 +27,103 @@ export const TransactionHistory = () => {
     
     try {
       const currentBlock = await publicClient.getBlockNumber();
-      const fromBlock = currentBlock > 20000n ? currentBlock - 20000n : 0n;
+      const fromBlock = currentBlock > 100000n ? currentBlock - 100000n : 0n;
 
-      // 1. Fetch Points/Check-in Events (No args, filter in JS)
-      const pointsPromise = publicClient.getLogs({
-        address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
-        event: parseAbiItem('event PointsEarned(address indexed user, uint256 amount, string reason)'),
-        fromBlock,
-        toBlock: 'latest'
-      });
+      // 3. Robust Pool Discovery & Scanning
+      let poolAddresses: `0x${string}`[] = [
+        '0x599C8D44A68C69772B53835B17743d56B0866d00',
+        '0x4CF995166442654fA723fF7d8065f4262143728E' // Add the one from the user's screenshot
+      ];
 
-      const checkInPromise = publicClient.getLogs({
-        address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
-        event: parseAbiItem('event CheckedIn(address indexed user, uint256 timestamp, uint256 pointsEarned, uint256 streak)'),
-        fromBlock,
-        toBlock: 'latest'
-      });
-
-      // 2. Fetch Token Transfers (USDC and EURC only for speed)
-      const transferPromises = TOKENS.slice(0, 3).map(token => 
+      try {
+        const factoryAddr = CONTRACT_ADDRESSES.FACTORY as `0x${string}`;
+        const len = await publicClient.readContract({
+          address: factoryAddr,
+          abi: [{ name: 'allPoolsLength', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ type: 'uint256' }] }],
+          functionName: 'allPoolsLength'
+        }) as bigint;
+        
+        const count = Number(len > 10n ? 10n : len); // Scan last 10 pools for speed
+        const poolPromises = Array.from({ length: count }, (_, i) => 
+          publicClient.readContract({
+            address: factoryAddr,
+            abi: [{ name: 'allPools', type: 'function', stateMutability: 'view', inputs: [{ type: 'uint256' }], outputs: [{ type: 'address' }] }],
+            functionName: 'allPools',
+            args: [BigInt(Number(len) - 1 - i)]
+          })
+        );
+        const discovered = await Promise.all(poolPromises);
+        poolAddresses = Array.from(new Set([...poolAddresses, ...discovered as `0x${string}`[]]));
+      } catch (e) { console.warn("Pool discovery failed, using fallbacks"); }
+      
+      const queries = [
         publicClient.getLogs({
+          address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
+          event: parseAbiItem('event PointsEarned(address indexed user, uint256 amount, string reason)'),
+          fromBlock,
+          toBlock: 'latest'
+        }),
+        publicClient.getLogs({
+          address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
+          event: parseAbiItem('event CheckedIn(address indexed user, uint256 timestamp, uint256 pointsEarned, uint256 streak)'),
+          fromBlock,
+          toBlock: 'latest'
+        }),
+        ...TOKENS.slice(0, 3).map(token => publicClient.getLogs({
           address: token.addr as `0x${string}`,
           event: parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)'),
           fromBlock,
           toBlock: 'latest'
-        })
-      );
+        })),
+        ...poolAddresses.map(pool => publicClient.getLogs({
+          address: pool as `0x${string}`,
+          event: parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)'),
+          fromBlock, toBlock: 'latest'
+        }))
+      ];
 
-      const results = await Promise.allSettled([
-        pointsPromise,
-        checkInPromise,
-        ...transferPromises
-      ]);
-
+      const results = await Promise.allSettled(queries);
       const allLogs: Transaction[] = [];
       const userAddr = address.toLowerCase();
 
       results.forEach((res, idx) => {
         if (res.status === 'fulfilled' && res.value) {
           (res.value as any[]).forEach(l => {
+            const hash = l.transactionHash;
+            // Point Events
             if (idx === 0 && l.args.user?.toLowerCase() === userAddr) {
-              allLogs.push({
-                id: `p-${l.transactionHash}-${l.logIndex}`,
-                type: l.args.reason || 'Points Reward',
-                asset: 'ARC POINTS',
-                amount: `+${l.args.amount.toString()}`,
-                status: 'Confirmed',
-                hash: l.transactionHash,
-                timestamp: Date.now() - (idx * 5000)
-              });
+              allLogs.push({ id: `p-${hash}-${l.logIndex}`, type: l.args.reason || 'Points Reward', asset: 'ARC POINTS', amount: `+${l.args.amount.toString()}`, status: 'Confirmed', hash, timestamp: Date.now() - 60000 });
             } else if (idx === 1 && l.args.user?.toLowerCase() === userAddr) {
-              allLogs.push({
-                id: `c-${l.transactionHash}-${l.logIndex}`,
-                type: 'Daily Check-in',
-                asset: 'ARC POINTS',
-                amount: `+${l.args.pointsEarned.toString()}`,
-                status: 'Confirmed',
-                hash: l.transactionHash,
-                timestamp: Number(l.args.timestamp) * 1000
-              });
-            } else if (idx >= 2) {
+              allLogs.push({ id: `c-${hash}-${l.logIndex}`, type: 'Daily Check-in', asset: 'ARC POINTS', amount: `+${l.args.pointsEarned.toString()}`, status: 'Confirmed', hash, timestamp: Number(l.args.timestamp) * 1000 });
+            } 
+            // Token Transfers (USDC/EURC/TRYC)
+            else if (idx >= 2 && idx < 5) {
               const from = l.args.from?.toLowerCase();
               const to = l.args.to?.toLowerCase();
               if (from === userAddr || to === userAddr) {
                 const token = TOKENS.find(t => t.addr.toLowerCase() === l.address.toLowerCase());
                 const isOut = from === userAddr;
-                allLogs.push({
-                  id: `t-${l.transactionHash}-${l.logIndex}`,
-                  type: isOut ? 'Transfer Out' : 'Transfer In',
-                  asset: token?.symbol || 'Token',
-                  amount: `${isOut ? '-' : '+'}${parseFloat(formatUnits(l.args.value, token?.decimals || 18)).toFixed(2)}`,
-                  status: 'Confirmed',
-                  hash: l.transactionHash,
-                  timestamp: Date.now() - (idx * 2000)
-                });
+                allLogs.push({ id: `t-${hash}-${l.logIndex}`, type: isOut ? 'Transfer Out' : 'Transfer In', asset: token?.symbol || 'Token', amount: `${isOut ? '-' : '+'}${parseFloat(formatUnits(l.args.value, token?.decimals || 18)).toFixed(5)}`, status: 'Confirmed', hash, timestamp: Date.now() - 120000 });
+              }
+            }
+            // Liquidity Events (LP Token Transfers)
+            else if (idx >= 5) {
+              const from = l.args.from?.toLowerCase();
+              const to = l.args.to?.toLowerCase();
+              if (from === userAddr || to === userAddr) {
+                const isMint = from === '0x0000000000000000000000000000000000000000';
+                const isBurn = to === '0x0000000000000000000000000000000000000000';
+                if (isMint || isBurn) {
+                  allLogs.push({ 
+                    id: `l-${hash}-${l.logIndex}`, 
+                    type: isMint ? 'Add Liquidity' : 'Remove Liquidity', 
+                    asset: 'Pool LP', 
+                    amount: isMint ? '+LP Token' : '-LP Token', 
+                    status: 'Confirmed', 
+                    hash, 
+                    timestamp: Date.now() - 30000 
+                  });
+                }
               }
             }
           });
@@ -109,13 +132,33 @@ export const TransactionHistory = () => {
 
       const localKey = `arc_history_${userAddr}`;
       const localHistory = JSON.parse(localStorage.getItem(localKey) || '[]');
-      const merged = [...localHistory, ...allLogs];
       
-      const uniqueLogs = Array.from(new Map(merged.map(item => [item.hash, item])).values())
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, 10);
+      // PRIORITY MERGE: If a local transaction exists with a specific hash, keep its labels (Type/Asset)
+      const mergedMap = new Map();
+      
+      // 1. First add on-chain logs (Baseline)
+      allLogs.forEach(tx => mergedMap.set(tx.hash.toLowerCase(), tx));
+      
+      // 2. Then overlay local history (Local labels like "Add Liquidity" have priority)
+      localHistory.forEach((tx: Transaction) => {
+        const hashKey = tx.hash.toLowerCase();
+        const existing = mergedMap.get(hashKey);
+        if (existing) {
+          // Keep the local metadata if it's more descriptive
+          if (tx.type.includes('Liquidity') || tx.type.includes('Swap') || tx.type.includes('Limit')) {
+             mergedMap.set(hashKey, { ...existing, ...tx, id: existing.id });
+          }
+        } else {
+          mergedMap.set(hashKey, tx);
+        }
+      });
 
-      setLogs(uniqueLogs);
+      const finalLogs = Array.from(mergedMap.values())
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .slice(0, 15);
+
+      setLogs(finalLogs);
+      localStorage.setItem(localKey, JSON.stringify(finalLogs));
     } catch (err) {
       console.error("Critical error in history fetch:", err);
       if (address) {
@@ -142,22 +185,20 @@ export const TransactionHistory = () => {
           asset: asset || (type === 'check-in' ? 'ARC POINTS' : 'Token'),
           amount: amount || (type === 'check-in' ? '+50' : 'Confirmed'),
           status: 'Confirmed',
-          hash: txHash || '0x...',
+          hash: txHash || `0x-tmp-${Date.now()}`,
           timestamp: Date.now()
         };
         
-        // Update state immediately for instant feedback
         setLogs(prev => {
-          const merged = [newTx, ...prev];
-          return Array.from(new Map(merged.map(item => [item.hash, item])).values())
+          const currentLocal = JSON.parse(localStorage.getItem(localKey) || '[]');
+          const merged = [newTx, ...currentLocal, ...prev];
+          const unique = Array.from(new Map(merged.map(item => [item.hash.toLowerCase(), item])).values())
             .sort((a, b) => b.timestamp - a.timestamp)
-            .slice(0, 10);
+            .slice(0, 15);
+          
+          localStorage.setItem(localKey, JSON.stringify(unique));
+          return unique;
         });
-
-        // Persist to localStorage
-        const current = JSON.parse(localStorage.getItem(localKey) || '[]');
-        const updated = [newTx, ...current].filter(t => t.hash !== '0x...').slice(0, 20);
-        localStorage.setItem(localKey, JSON.stringify(updated));
       }
     };
 
@@ -198,8 +239,8 @@ export const TransactionHistory = () => {
               <tr className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] border-b border-white/5 bg-white/[0.01]">
                 <th className="px-4 py-5">Activity</th>
                 <th className="px-4 py-5">Asset</th>
-                <th className="px-4 py-5">Quantity / Status</th>
-                <th className="px-4 py-5">State</th>
+                <th className="px-4 py-5 text-center">Quantity / Status</th>
+                <th className="px-4 py-5 text-center">State</th>
                 <th className="px-4 py-5 text-right">ArcScan</th>
               </tr>
             </thead>
@@ -208,22 +249,24 @@ export const TransactionHistory = () => {
                 <tr key={tx.id} className="group hover:bg-white/[0.02] transition-all duration-300">
                   <td className="px-4 py-5">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg border ${
-                        tx.type.includes('Check-in') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' :
-                        tx.type.includes('Liquidity') ? 'bg-purple-500/10 text-purple-400 border-purple-500/10' :
-                        tx.type.includes('Transfer') || tx.type.includes('Action') || tx.type.includes('Exchanged') ? 'bg-blue-500/10 text-blue-400 border-blue-500/10' :
-                        'bg-white/5 text-white/40 border-white/5'
-                      }`}>
-                        {tx.type.includes('Check-in') ? <Star size={14} /> : 
-                         tx.type.includes('Liquidity') ? <Droplets size={14} /> : 
-                         tx.type.includes('Transfer') || tx.type.includes('Action') || tx.type.includes('Exchanged') ? <ArrowRightLeft size={14} /> : <History size={14} />}
+                      <div className="flex flex-col items-center justify-center min-w-[36px] h-9 rounded-lg bg-white/5 border border-white/5 text-[8px] font-bold text-white/30 uppercase tracking-tighter">
+                        {(() => {
+                          const diff = (Date.now() - tx.timestamp) / 1000;
+                          if (diff < 60) return 'Now';
+                          if (diff < 3600) return `${Math.floor(diff/60)}m`;
+                          if (diff < 86400) return `${Math.floor(diff/3600)}h`;
+                          return `${Math.floor(diff/86400)}d`;
+                        })()}
+                        <span className="opacity-40 text-[7px]">ago</span>
                       </div>
                       <span className={`text-[11px] font-black uppercase tracking-widest ${
-                        tx.type.includes('Check-in') ? 'text-emerald-400' :
-                        tx.type.includes('Liquidity') ? 'text-purple-400' :
-                        tx.type.includes('Stake') || tx.type.includes('Unstake') ? 'text-orange-400' :
+                        tx.type.includes('Check-in') ? 'text-blue-400' :
+                        tx.type.includes('Liquidity') ? 'text-indigo-400' :
+                        tx.type.includes('Stake') || tx.type.includes('Unstake') ? 'text-purple-400' :
                         tx.type.includes('Approval') ? 'text-cyan-400' :
-                        tx.type.includes('Exchanged') || tx.type.includes('Swap') ? 'text-emerald-400' :
+                        tx.type.includes('Swap') || tx.type.includes('Exchanged') ? 'text-orange-500' :
+                        tx.type.includes('Limit') ? 'text-amber-400' :
+                        tx.type.includes('Faucet') ? 'text-indigo-400' :
                         'text-white'
                       }`}>{tx.type}</span>
                     </div>
@@ -233,7 +276,7 @@ export const TransactionHistory = () => {
                       tx.asset === 'ARC POINTS' ? 'text-blue-400' : 'text-white'
                     }`}>{tx.asset}</span>
                   </td>
-                  <td className="px-4 py-5">
+                  <td className="px-4 py-5 text-center">
                     <span className={`text-[12px] font-black tabular-nums ${
                       tx.amount.startsWith('+') ? 'text-emerald-400' : 
                       tx.amount.startsWith('-') ? 'text-rose-400' : 'text-white'
@@ -246,8 +289,8 @@ export const TransactionHistory = () => {
                       }).join(' / ')}
                     </span>
                   </td>
-                  <td className="px-4 py-5">
-                    <div className="flex items-center gap-2">
+                  <td className="px-4 py-5 text-center">
+                    <div className="flex items-center justify-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
                       <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Confirmed</span>
                     </div>

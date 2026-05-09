@@ -107,7 +107,7 @@ const TokenInputSection = ({
         <div className="flex flex-col items-end gap-1">
           <span className="text-[9px] font-black text-white/30 uppercase tracking-tighter">Balance</span>
           <span className="text-[10px] font-black text-white/60 tabular-nums">
-            {balance !== undefined ? parseFloat(formatUnits(balance as bigint, selectedToken?.decimals || 18)).toLocaleString(undefined, { maximumFractionDigits: 6 }) : '0.00'}
+            {balance !== undefined ? parseFloat(formatUnits(balance as bigint, selectedToken?.decimals || 18)).toLocaleString(undefined, { maximumFractionDigits: 5 }) : '0.00'}
           </span>
         </div>
       </div>
@@ -307,7 +307,10 @@ export const PoolsPanel = () => {
         try {
           const pFrom = parseUnits(val, fromToken.decimals);
           const pTo = (pFrom * resTo) / resFrom;
-          return formatUnits(pTo, toToken.decimals);
+          const formatted = formatUnits(pTo, toToken.decimals);
+          // TRUNCATE TO 5 DECIMALS
+          const parts = formatted.split('.');
+          return parts.length > 1 ? `${parts[0]}.${parts[1].slice(0, 5)}` : formatted;
         } catch (e) {}
       }
     }
@@ -317,7 +320,7 @@ export const PoolsPanel = () => {
         const priceTo = prices[toToken.symbol].price;
         if (priceTo > 0) {
           const amountToVal = (parseFloat(val) * priceFrom) / priceTo;
-          return amountToVal.toFixed(Math.min(toToken.decimals, 6));
+          return amountToVal.toFixed(5);
         }
       } catch (e) {}
     }
@@ -346,7 +349,6 @@ export const PoolsPanel = () => {
   }, [tokenA, tokenB]);
 
   const handleApprove = async (token: any) => {
-    play('click');
     if (!address || !token) return;
     try {
       const tid = notify({ type: 'loading', title: 'Awaiting Approval', message: `Please confirm approval for ${token.symbol} in your wallet.` });
@@ -440,7 +442,7 @@ export const PoolsPanel = () => {
               <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Pool Stats</span>
               <span className="text-[9px] text-white/50 leading-relaxed font-black uppercase tracking-tighter">
                 LP Address: <span className="font-mono text-white/80">{selectedPoolAddr ? `${selectedPoolAddr.slice(0,6)}...${selectedPoolAddr.slice(-4)}` : 'Scanning...'}</span><br/>
-                Position: <span className="text-white tabular-nums">{parseFloat(formatUnits(userLPBalance, 18)).toLocaleString(undefined, { maximumFractionDigits: 6 })} LP</span>
+                Position: <span className="text-white tabular-nums">{parseFloat(formatUnits(userLPBalance, 18)).toLocaleString(undefined, { maximumFractionDigits: 5 })} LP</span>
               </span>
             </div>
           </div>
@@ -462,11 +464,11 @@ export const PoolsPanel = () => {
                 <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-1">You Will Receive</span>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2"><img src={tokenA?.logo} className="w-5 h-5 rounded-full" /><span className="text-xs font-black text-white uppercase">{tokenA?.symbol}</span></div>
-                  <span className="text-sm font-black text-white tabular-nums">{parseFloat(removeAmounts.a).toLocaleString(undefined, { maximumFractionDigits: 6 })}</span>
+                  <span className="text-sm font-black text-white tabular-nums">{parseFloat(removeAmounts.a).toLocaleString(undefined, { maximumFractionDigits: 5 })}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2"><img src={tokenB?.logo} className="w-5 h-5 rounded-full" /><span className="text-xs font-black text-white uppercase">{tokenB?.symbol}</span></div>
-                  <span className="text-sm font-black text-white tabular-nums">{parseFloat(removeAmounts.b).toLocaleString(undefined, { maximumFractionDigits: 6 })}</span>
+                  <span className="text-sm font-black text-white tabular-nums">{parseFloat(removeAmounts.b).toLocaleString(undefined, { maximumFractionDigits: 5 })}</span>
                 </div>
               </div>
             </div>

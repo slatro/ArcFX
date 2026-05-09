@@ -46,8 +46,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     <NotificationContext.Provider value={{ notify, dismiss, dismissAll }}>
       {children}
       
-      {/* TOASTER OVERLAY */}
-      <div className="fixed top-24 right-6 z-[9999] flex flex-col gap-3 w-80 pointer-events-none">
+      {/* TOASTER OVERLAY - Offset further down to avoid TransactionIsland at top-6 */}
+      <div className="fixed top-32 right-6 z-[9999] flex flex-col gap-3 w-80 pointer-events-none">
         {notifications.map((n) => (
           <div 
             key={n.id}
