@@ -59,7 +59,7 @@ const AirdropIcon = () => (
   </svg>
 );
 
-const StatCard = ({ title, value, change, icon: Icon, color, imageIcon, glowColor, isSpecial, extraInfo, pendingAmount, onAction, actionLabel }: any) => (
+const StatCard = ({ title, value, change, icon: Icon, color, imageIcon, glowColor, isSpecial, extraInfo, pendingAmount, onAction, actionLabel, onExtraAction }: any) => (
   <div className={`glass-frame px-4 py-3 flex items-center gap-4 group hover:border-white/20 transition-all duration-700 relative overflow-hidden h-[72px] ${isSpecial ? 'border-blue-400/40 bg-blue-400/[0.08]' : ''}`}>
     <div className="absolute top-0 right-0 w-16 h-16 bg-white/[0.02] rounded-full -mr-8 -mt-8 group-hover:scale-150 transition-transform duration-700" />
     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xl border border-white/5 ${color}`}>
@@ -73,12 +73,22 @@ const StatCard = ({ title, value, change, icon: Icon, color, imageIcon, glowColo
       </div>
     </div>
     {onAction ? (
-      <button 
-        onClick={(e) => { e.stopPropagation(); onAction(); }}
-        className="ml-auto px-4 py-2 bg-white/5 hover:bg-white text-white/60 hover:text-black border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-lg"
-      >
-        {actionLabel || 'Action'}
-      </button>
+      <div className="flex flex-col items-end gap-1 ml-auto">
+        <button 
+          onClick={(e) => { e.stopPropagation(); onAction(); }}
+          className="px-4 py-1.5 bg-white/5 hover:bg-white text-white/60 hover:text-black border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all shadow-lg"
+        >
+          {actionLabel || 'Action'}
+        </button>
+        {onExtraAction && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); onExtraAction(); }}
+            className="text-[7px] font-black text-blue-400 hover:text-white uppercase tracking-widest animate-pulse"
+          >
+            {extraInfo}
+          </button>
+        )}
+      </div>
     ) : extraInfo && (
       <div className="flex flex-col items-end ml-auto">
         <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest whitespace-nowrap mb-0.5">{extraInfo}</span>
@@ -484,9 +494,10 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
           change={`+${refPoints || 0} pts`}
           icon={Users} 
           color="bg-purple-500/10 text-purple-400"
-          onAction={localStorage.getItem('arc_pending_ref') ? () => handleBindReferrer(localStorage.getItem('arc_pending_ref')!) : copyRefLink}
-          actionLabel={localStorage.getItem('arc_pending_ref') ? (isBinding || isBindingConfirming ? "Binding..." : "Bind Referrer") : (refCopied ? "Copied!" : "Copy Link")}
-          extraInfo={localStorage.getItem('arc_pending_ref') ? "PENDING REF" : undefined}
+          onAction={copyRefLink}
+          actionLabel={refCopied ? "Copied!" : "Copy Link"}
+          extraInfo={localStorage.getItem('arc_pending_ref') ? "Claim Invite" : undefined}
+          onExtraAction={localStorage.getItem('arc_pending_ref') ? () => handleBindReferrer(localStorage.getItem('arc_pending_ref')!) : undefined}
         />
         <StatCard title="PORTFOLIO VALUE" value={`$${totalPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} change="+1.2%" icon={TrendingUp} color="bg-emerald-500/10 text-emerald-400" />
         <StatCard title="ACTIVE POSITIONS" value={poolDetails.length.toString()} icon={Wallet} color="bg-purple-500/10 text-purple-400" />
