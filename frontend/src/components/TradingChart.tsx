@@ -126,12 +126,17 @@ export const TradingChart = ({ tokenIn, tokenOut }: { tokenIn: any; tokenOut: an
           const currentRatio = pIn / pOut;
           
           const hourlySeed = Math.floor(Date.now() / 3600000);
-          const pairHash = symIn.split('').reduce((a,b)=>a+b.charCodeAt(0),0) + symOut.split('').reduce((a,b)=>a+b.charCodeAt(0),0);
+          const pairHash = symIn.split('').reduce((a,b,i)=>a+b.charCodeAt(0)*(i+1),0) + 
+                           symOut.split('').reduce((a,b,i)=>a+b.charCodeAt(0)*(i+10),0);
           
           let lastP = currentRatio;
           const pts = Array.from({ length: 48 }, (_, i) => {
             const seed = hourlySeed + pairHash + i;
-            const change = 1 + (seededRandom(seed) * 0.002 - 0.001);
+            // Base walk + Sine wave for "wavy" look
+            const walk = (seededRandom(seed) * 0.004 - 0.002);
+            const wave = Math.sin(i / 3) * 0.001; 
+            const change = 1 + walk + wave;
+            
             lastP = lastP * change;
             return {
               ts: (hourlySeed * 3600000) - (48 - i) * 3600000,
@@ -202,24 +207,34 @@ export const TradingChart = ({ tokenIn, tokenOut }: { tokenIn: any; tokenOut: an
   const gridEndTs = nextBoundary;
 
   const currentP = livePrice || (history.length > 0 ? history[history.length - 1].price : 1);
-  const displayPrices = [...history.map(d => d.price), currentP];
-  const rawMax = Math.max(...(displayPrices.length ? displayPrices : [1]));
-  const rawMin = Math.min(...(displayPrices.length ? displayPrices : [1]));
-  const rawRange = rawMax - rawMin;
   
-  // Add 30% padding top and bottom to ensure the line is well-centered
-  const padding = rawRange > 0 ? rawRange * 0.30 : rawMax * 0.002;
-  const maxP = rawMax + padding;
-  const minP = rawMin - padding;
+  // Create a synthetic "now" point to make the line reach the current price
+  const chartData = useMemo(() => {
+    if (history.length === 0) return [];
+    const pts = [...history];
+    pts[pts.length - 1] = { ts: Date.now(), price: currentP };
+    return pts;
+  }, [history, currentP]);
+
+  // CENTER-BALANCED DOMAIN: Always keep current price in the vertical middle
+  const maxDev = useMemo(() => {
+    if (chartData.length === 0) return currentP * 0.002;
+    return Math.max(...chartData.map(d => Math.abs(d.price - currentP)));
+  }, [chartData, currentP]);
+
+  // Use at least 0.5% spread for visual breathing room
+  const spread = Math.max(maxDev * 1.5, currentP * 0.0025);
+  const maxP = currentP + spread;
+  const minP = currentP - spread;
   const rangeP = maxP - minP;
 
   const pts = useMemo(() => {
-    if (history.length === 0) return [];
-    return history.map((d) => ({
+    if (chartData.length === 0) return [];
+    return chartData.map((d) => ({
       x: PX_LEFT + ((d.ts - gridStartTs) * (W - PX_LEFT - PX_RIGHT)) / (gridEndTs - gridStartTs),
       y: (H - PY) - ((d.price - minP) * (H - 2 * PY)) / rangeP,
     }));
-  }, [history, gridStartTs, gridEndTs, minP, rangeP]);
+  }, [chartData, gridStartTs, gridEndTs, minP, rangeP]);
 
   const pathD = useMemo(() => {
     if (pts.length < 2) return '';
