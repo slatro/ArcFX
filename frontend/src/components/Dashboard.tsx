@@ -14,6 +14,8 @@ import FACTORY_ABI from '../abis/ArcFXFactory.json';
 import STAKING_ABI from '../abis/ArcFXStaking.json';
 import { useNotifications } from '../context/NotificationContext';
 import { usePoints } from '../context/PointsContext';
+import { useSound } from '../context/SoundContext';
+import { Copy, Users, Gift, Check } from 'lucide-react';
 
 const FormatSymbol = ({ symbol, className = "" }: { symbol: string | undefined, className?: string }) => {
   if (!symbol) return null;
@@ -119,8 +121,8 @@ const AssetRow = ({ asset, balance, price, change24h, onAction }: any) => {
             <span>Soon</span>
           </div>
         ) : (
-          <button 
-            onClick={() => onAction(asset?.symbol === 'USDC' ? 'stake' : asset)} 
+          <button
+            onClick={() => onAction(asset?.symbol === 'USDC' ? 'stake' : asset)}
             className={`px-5 py-2 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${isNative ? 'bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white' : 'bg-white/[0.05] border-white/10 text-white/40 hover:bg-white hover:text-black'}`}
           >
             {isNative ? 'Stake' : 'Trade'}
@@ -128,6 +130,77 @@ const AssetRow = ({ asset, balance, price, change24h, onAction }: any) => {
         )}
       </td>
     </tr>
+  );
+};
+
+const ReferralCard = ({ address, refCount, refPoints, onBind, isBinding }: any) => {
+  const [copied, setCopied] = React.useState(false);
+  const { play } = useSound();
+  const pendingRef = localStorage.getItem('arc_pending_ref');
+
+  const shareUrl = `https://arc-fx.vercel.app/?ref=${address}`;
+
+  const copyToClipboard = () => {
+    play('click');
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+      {/* Invite Link Card */}
+      <div className="xl:col-span-2 glass-frame p-6 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-1000" />
+        <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 shadow-lg shadow-blue-500/10">
+            <Users size={24} />
+          </div>
+          <div className="flex-1 space-y-2">
+            <h3 className="text-xs font-black text-white uppercase tracking-[0.3em]">Referral System</h3>
+            <p className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Invite friends and earn 10% of their daily points activity forever.</p>
+            <div className="flex items-center gap-2 mt-4 p-1 bg-black/40 border border-white/5 rounded-xl">
+              <div className="flex-1 px-4 py-2 font-mono text-[10px] text-blue-400/80 truncate">{shareUrl}</div>
+              <button
+                onClick={copyToClipboard}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
+              >
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+                {copied ? 'Copied' : 'Copy Link'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Referral Stats Card */}
+      <div className="glass-frame p-6 flex flex-col justify-between group">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-lg shadow-purple-500/10">
+            <Gift size={20} />
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[18px] font-black text-white tabular-nums leading-none">+{refPoints}</span>
+            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest mt-1">Total Earned</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mt-auto">
+          <div className="flex flex-col">
+            <span className="text-[20px] font-black text-white tabular-nums leading-none">{refCount}</span>
+            <span className="text-[8px] font-black text-white/20 uppercase tracking-widest mt-1">Referred Users</span>
+          </div>
+          {pendingRef && (
+            <button
+              onClick={() => onBind(pendingRef)}
+              disabled={isBinding}
+              className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all animate-pulse"
+            >
+              {isBinding ? <Loader2 size={12} className="animate-spin" /> : 'Bind Pending Ref'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -221,7 +294,7 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
     }));
   }, [poolsLength, activeFactory]);
 
-  const { data: poolAddressesRes } = useReadContracts({ 
+  const { data: poolAddressesRes } = useReadContracts({
     contracts: poolAddressContracts as any,
     query: { enabled: poolAddressContracts.length > 0, refetchInterval: 10000 }
   });
@@ -298,23 +371,56 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
   const walletValue = useTotalWalletValue(balances, prices, { usdc: usdcNativeBal, eurc: eurcNativeBal });
   const lpValue = poolDetails.reduce((acc, p) => acc + p.usdValue, 0);
   const totalPortfolioValue = lpValue + walletValue;
-  
+
   const estimatedYield = poolDetails.reduce((acc, p) => {
     const aprNum = parseFloat(p.apr);
     return acc + (p.usdValue * (aprNum / 100) / 365);
   }, 0).toFixed(6);
 
-  const { data: userPointsRes, refetch: refetchPoints } = useReadContract({ 
-    address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`, 
-    abi: [{ name: 'users', type: 'function', stateMutability: 'view', inputs: [{ name: '', type: 'address' }], outputs: [{ name: 'totalPoints', type: 'uint256' }, { name: 'lastCheckIn', type: 'uint256' }, { name: 'currentStreak', type: 'uint256' }, { name: 'totalSwaps', type: 'uint256' }, { name: 'totalLiquidityAdded', type: 'uint256' }] }], 
-    functionName: 'users', 
-    args: address ? [address] : undefined, 
-    query: { enabled: !!address, refetchInterval: 30000 } 
+  const { data: userPointsRes, refetch: refetchPoints } = useReadContract({
+    address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
+    abi: [{ name: 'users', type: 'function', stateMutability: 'view', inputs: [{ name: '', type: 'address' }], outputs: [{ name: 'totalPoints', type: 'uint256' }, { name: 'lastCheckIn', type: 'uint256' }, { name: 'currentStreak', type: 'uint256' }, { name: 'totalSwaps', type: 'uint256' }, { name: 'totalLiquidityAdded', type: 'uint256' }] }],
+    functionName: 'users',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address, refetchInterval: 30000 }
   });
 
   const userPoints = (userPointsRes as any)?.[0];
   const lastCheckIn = (userPointsRes as any)?.[1];
   const userStreak = (userPointsRes as any)?.[2];
+
+  // Referral Data
+  const { data: refData } = useReadContracts({
+    contracts: [
+      { address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`, abi: POINTS_ABI.abi || POINTS_ABI, functionName: 'referralCount', args: address ? [address] : undefined },
+      { address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`, abi: POINTS_ABI.abi || POINTS_ABI, functionName: 'referralPoints', args: address ? [address] : undefined },
+      { address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`, abi: POINTS_ABI.abi || POINTS_ABI, functionName: 'referrers', args: address ? [address] : undefined },
+    ],
+    query: { enabled: !!address, refetchInterval: 30000 }
+  });
+
+  const refCount = refData?.[0].status === 'success' ? Number(refData[0].result) : 0;
+  const refPoints = refData?.[1].status === 'success' ? Number(refData[1].result) : 0;
+  const myReferrer = refData?.[2].status === 'success' ? refData[2].result as string : undefined;
+
+  const { writeContract: bindWrite, data: bindHash, isPending: isBinding } = useWriteContract();
+  const { isLoading: isBindingConfirming, isSuccess: isBindingSuccess } = useWaitForTransactionReceipt({ hash: bindHash });
+
+  useEffect(() => {
+    if (isBindingSuccess) {
+      localStorage.removeItem('arc_pending_ref');
+      notify('success', 'Referrer Bound Successfully', 'Your referral has been recorded on-chain.');
+    }
+  }, [isBindingSuccess]);
+
+  const handleBindReferrer = (ref: string) => {
+    bindWrite({
+      address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
+      abi: POINTS_ABI.abi || POINTS_ABI,
+      functionName: 'setReferrer',
+      args: [ref as `0x${string}`]
+    });
+  };
 
   // Check if check-in is available (24h has passed)
   const isCheckInAvailable = useMemo(() => {
@@ -322,7 +428,7 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
     const now = Math.floor(Date.now() / 1000);
     return now - Number(lastCheckIn) >= 24 * 3600;
   }, [lastCheckIn]);
-  
+
   const { data: nextSnapshot, refetch: refetchSnapshot } = useReadContract({
     address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
     abi: [{ name: 'getNextSnapshotTime', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'uint256' }] }],
@@ -356,7 +462,7 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
     const stakeContribution = Math.floor(stakedValueUsd * 5);
     const contractSwaps = Number((userPointsRes as any)?.[3] || 0);
     const swapContribution = Math.max(contractSwaps, localSwapCount) * 1; // 1 point per swap as requested
-    const activityBaseline = 25; 
+    const activityBaseline = 25;
     return lpContribution + stakeContribution + swapContribution + activityBaseline;
   }, [lpValue, stakedValueUsd, userPointsRes, localSwapCount, address]);
 
@@ -416,11 +522,11 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
   return (
     <div className="w-full space-y-8 px-2">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="ARC POINTS" 
-          value={userPoints !== undefined ? (Number(userPoints) + localPointsOffset).toString() : '...'} 
-          isSpecial={true} 
-          color="bg-blue-500/10 text-blue-400" 
+        <StatCard
+          title="ARC POINTS"
+          value={userPoints !== undefined ? (Number(userPoints) + localPointsOffset).toString() : '...'}
+          isSpecial={true}
+          color="bg-blue-500/10 text-blue-400"
           extraInfo={isCheckInAvailable ? "READY TO CLAIM" : (snapshotCountdown ? `Next: ${snapshotCountdown}` : undefined)}
           pendingAmount={pendingPoints}
         />
@@ -430,6 +536,14 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
       </div>
 
       <PortfolioChart totalValue={totalPortfolioValue} assets={portfolioAssets} />
+
+      <ReferralCard
+        address={address}
+        refCount={refCount}
+        refPoints={refPoints}
+        onBind={handleBindReferrer}
+        isBinding={isBinding || isBindingConfirming}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <div className="space-y-4">
@@ -460,7 +574,7 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
             <div className="w-1.5 h-6 bg-purple-500 rounded-full" />
             <h3 className="text-xs font-black text-white uppercase tracking-[0.3em]">Staking & Positions</h3>
           </div>
-          
+
           {/* ULTRA COMPACT STAKING ROW */}
           <div className="premium-card p-3 shadow-xl border-purple-500/20 bg-purple-500/[0.02]">
             <div className="flex items-center justify-between gap-4 px-2">
@@ -475,7 +589,7 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
                   <span className="text-[8px] font-bold text-emerald-400/60 uppercase tracking-widest mt-1">Yield Bearing</span>
                 </div>
               </div>
-              
+
               <div className="flex-1 flex items-center justify-around gap-6 overflow-hidden">
                 <div className="flex flex-col">
                   <span className="text-xs font-black text-white tabular-nums leading-none">
@@ -486,7 +600,7 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
                   </span>
                   <span className="text-[9px] font-bold text-white/20 tabular-nums mt-1">≈ ${stakedValueUsd.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                 </div>
-                
+
                 <div className="flex flex-col items-center">
                   <span className="text-xs font-black text-emerald-400 tabular-nums leading-none">12.54%</span>
                   <span className="text-[8px] font-bold text-white/10 uppercase tracking-widest mt-1">APY</span>
@@ -503,7 +617,7 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
                 </div>
               </div>
 
-              <button 
+              <button
                 onClick={() => onTradeAction({ symbol: 'astUSDC' })}
                 className="px-4 py-2 bg-white/[0.05] hover:bg-white text-white hover:text-black border border-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shrink-0"
               >

@@ -16,14 +16,33 @@ contract ArcPoints is Ownable {
     address[] public userList;
     mapping(address => bool) public isUser;
 
+    // Referral System
+    mapping(address => address) public referrers;
+    mapping(address => uint256) public referralCount;
+    mapping(address => uint256) public referralPoints;
+    uint256 public constant REFERRAL_BONUS = 5; // 5 points per referee check-in
+
     uint256 public constant CHECK_IN_POINTS = 50;
     uint256 public constant STREAK_BONUS = 10; // Extra 10 per day of streak
     uint256 public constant COOLDOWN = 24 hours;
 
     event PointsEarned(address indexed user, uint256 amount, string reason);
     event CheckedIn(address indexed user, uint256 timestamp, uint256 pointsEarned, uint256 streak);
+    event ReferrerSet(address indexed user, address indexed referrer);
 
     constructor(address initialOwner) Ownable(initialOwner) {}
+
+    function setReferrer(address _referrer) external {
+        require(_referrer != address(0), "Invalid referrer");
+        require(_referrer != msg.sender, "Cannot refer yourself");
+        require(referrers[msg.sender] == address(0), "Referrer already set");
+        require(isUser[_referrer], "Referrer must be an active user");
+
+        referrers[msg.sender] = _referrer;
+        referralCount[_referrer] += 1;
+        
+        emit ReferrerSet(msg.sender, _referrer);
+    }
 
     function checkIn() external {
         UserInfo storage user = users[msg.sender];
@@ -34,7 +53,7 @@ contract ArcPoints is Ownable {
             userList.push(msg.sender);
         }
 
-        // Streak logic: if last check-in was within 48 hours, increment streak. Otherwise reset.
+        // Streak logic
         if (block.timestamp <= user.lastCheckIn + 48 hours) {
             user.currentStreak += 1;
         } else {
@@ -47,6 +66,14 @@ contract ArcPoints is Ownable {
         uint256 totalEarned = CHECK_IN_POINTS + bonus;
         user.totalPoints += totalEarned;
         user.lastCheckIn = block.timestamp;
+
+        // Reward Referrer if exists
+        address referrer = referrers[msg.sender];
+        if (referrer != address(0)) {
+            users[referrer].totalPoints += REFERRAL_BONUS;
+            referralPoints[referrer] += REFERRAL_BONUS;
+            emit PointsEarned(referrer, REFERRAL_BONUS, "Referral Bonus");
+        }
 
         emit CheckedIn(msg.sender, block.timestamp, totalEarned, user.currentStreak);
         emit PointsEarned(msg.sender, totalEarned, "Daily Check-in");

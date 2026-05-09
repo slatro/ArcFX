@@ -10,6 +10,7 @@ import ERC20_ABI from '../abis/ERC20.json';
 import STAKING_ABI from '../abis/ArcFXStaking.json';
 import { usePrices } from '../context/PriceContext';
 import { useNotifications } from '../context/NotificationContext';
+import { useSound } from '../context/SoundContext';
 import { triggerIsland } from './TransactionIsland';
 
 const PROTOCOL_TOKENS = TOKENS.filter(t => t.symbol !== 'EURC');
@@ -124,6 +125,7 @@ export const SwapCard = ({
 }) => {
   const { address, isConnected } = useAccount();
   const { notify, dismiss, dismissAll } = useNotifications();
+  const { play } = useSound();
   const lastNotifiedHash = useRef<string | null>(null);
   const [fromAmount, setFromAmount] = useState('');
   const [limitPrice, setLimitPrice] = useState('');
@@ -396,6 +398,7 @@ export const SwapCard = ({
       const actionType = activeTab === 'limit' ? 'Limit Order' : (activeTab === 'stake' ? (isUnstake ? 'Unstaked' : 'Staked') : 'Swap');
       const assetStr = activeTab === 'limit' ? `${tokenIn?.symbol} / ${tokenOut?.symbol}` : tokenIn?.symbol;
       
+      play('success');
       triggerIsland('success', `${actionType === 'Swap' ? 'Swap' : actionType} Successful`, actionHash, { 
         type: activeTab === 'limit' ? 'Limit Order' : (activeTab === 'stake' ? (isUnstake ? 'Unstaked' : 'Staked') : 'Swap'), 
         asset: assetStr, 
@@ -407,6 +410,7 @@ export const SwapCard = ({
   }, [isActionSuccess, actionHash]);
 
   const handleAction = async () => {
+    play('click');
     if (!isConnected || !address || !tokenIn || !tokenOut) return;
     if (needsApproval && tokenIn && spenderAddress) {
       triggerIsland('processing', `Authorizing ${tokenIn.symbol}...`);

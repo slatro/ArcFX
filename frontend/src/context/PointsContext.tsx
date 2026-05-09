@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAccount } from 'wagmi';
 import { useNotifications } from './NotificationContext';
+import { useSound } from './SoundContext';
 
 interface PointsContextType {
   localSwapCount: number;
@@ -12,6 +13,8 @@ const PointsContext = createContext<PointsContextType | undefined>(undefined);
 
 export const PointsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { address } = useAccount();
+  const { notify } = useNotifications();
+  const { play } = useSound();
   const [localSwapCount, setLocalSwapCount] = useState<number>(0);
   const [localPointsOffset, setLocalPointsOffset] = useState<number>(0);
 
@@ -64,6 +67,7 @@ export const PointsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           if (isLP) label = '+10 LP Points Earned!';
           if (isStake) label = '+5 Staking Points Earned!';
           
+          play('points');
           notify('success', label, `${type} activity recorded.`);
           return next;
         });

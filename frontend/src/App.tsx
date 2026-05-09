@@ -13,6 +13,7 @@ import { TransactionIsland } from './components/TransactionIsland';
 import { TransactionHistory } from './components/TransactionHistory';
 import { LimitOrders } from './components/LimitOrders';
 import { PointsProvider } from './context/PointsContext';
+import { SoundProvider } from './context/SoundContext';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('arc_active_tab') || 'swap');
@@ -26,6 +27,15 @@ export default function App() {
   }, [activeTab]);
 
   useEffect(() => {
+    // Detect Referral in URL
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref && ref.startsWith('0x') && ref.length === 42) {
+      localStorage.setItem('arc_pending_ref', ref);
+      // Clean up URL without refresh
+      const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      window.history.replaceState({ path: newUrl }, '', newUrl);
+    }
     setIsLoaded(true);
   }, []);
 
@@ -73,46 +83,48 @@ export default function App() {
   return (
     <NotificationProvider>
       <PointsProvider>
-      <div className="min-h-screen flex flex-col font-sans relative overflow-x-hidden bg-transparent">
-        <TransactionIsland />
-        {/* ATMOSPHERIC BACKGROUND HANDLED BY CSS */}
-        <div className="bg-orbs" />
+        <SoundProvider>
+          <div className="min-h-screen flex flex-col font-sans relative overflow-x-hidden bg-transparent">
+            <TransactionIsland />
+            {/* ATMOSPHERIC BACKGROUND HANDLED BY CSS */}
+            <div className="bg-orbs" />
 
-        <div className={`flex flex-col min-h-screen relative z-10 transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-          <Header activeTab={activeTab} setActiveTab={setActiveTab} />
-          <div>
-            <ActivityTicker />
+            <div className={`flex flex-col min-h-screen relative z-10 transition-opacity duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
+              <Header activeTab={activeTab} setActiveTab={setActiveTab} />
+              <div>
+                <ActivityTicker />
+              </div>
+
+              <main className="flex-1 overflow-y-auto">
+                <div className="max-w-[1600px] mx-auto px-8 pt-7 pb-10">
+                  {renderContent()}
+                  
+                  {/* GLOBAL TRANSACTION HISTORY & LIMIT ORDERS - Always mounted to listen for events */}
+                  <div className={`mt-12 space-y-12 ${activeTab === 'swap' ? 'block' : 'hidden'}`}>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                       <LimitOrders />
+                       <TransactionHistory />
+                    </div>
+                  </div>
+                </div>
+              </main>
+
+              <footer className="py-12 px-8 border-t border-white/[0.03] mt-auto bg-transparent">
+                <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+                  <div className="flex items-center gap-12">
+                    <Logo size={14} />
+                    <div className="hidden md:flex items-center gap-8">
+                      {['Docs', 'Github', 'Twitter', 'Status'].map(link => (
+                        <a key={link} href="#" className="text-[9px] font-black text-white/20 hover:text-white uppercase tracking-[0.2em] transition-colors">{link}</a>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-[8px] font-black text-white/10 uppercase tracking-[0.4em]">© 2026 ARCFX PROTOCOL. ALL RIGHTS RESERVED.</div>
+                </div>
+              </footer>
+            </div>
           </div>
-
-          <main className="flex-1 overflow-y-auto">
-            <div className="max-w-[1600px] mx-auto px-8 pt-7 pb-10">
-              {renderContent()}
-              
-              {/* GLOBAL TRANSACTION HISTORY & LIMIT ORDERS - Always mounted to listen for events */}
-              <div className={`mt-12 space-y-12 ${activeTab === 'swap' ? 'block' : 'hidden'}`}>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                   <LimitOrders />
-                   <TransactionHistory />
-                </div>
-              </div>
-            </div>
-          </main>
-
-          <footer className="py-12 px-8 border-t border-white/[0.03] mt-auto bg-transparent">
-            <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-              <div className="flex items-center gap-12">
-                <Logo size={14} />
-                <div className="hidden md:flex items-center gap-8">
-                  {['Docs', 'Github', 'Twitter', 'Status'].map(link => (
-                    <a key={link} href="#" className="text-[9px] font-black text-white/20 hover:text-white uppercase tracking-[0.2em] transition-colors">{link}</a>
-                  ))}
-                </div>
-              </div>
-              <div className="text-[8px] font-black text-white/10 uppercase tracking-[0.4em]">© 2026 ARCFX PROTOCOL. ALL RIGHTS RESERVED.</div>
-            </div>
-          </footer>
-        </div>
-      </div>
+        </SoundProvider>
       </PointsProvider>
     </NotificationProvider>
   );

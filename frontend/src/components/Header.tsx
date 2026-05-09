@@ -7,12 +7,14 @@ import { Logo } from './Logo';
 import { ProfileModal, AVATARS } from './ProfileModal';
 import { CONTRACT_ADDRESSES, TOKENS } from '../config/contracts';
 import { triggerIsland } from './TransactionIsland';
+import { useSound } from '../context/SoundContext';
 import ERC20_ABI from '../abis/ERC20.json';
 import FAUCET_ABI from '../abis/ArcMultiFaucet.json';
 
 export const Header = ({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) => {
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
+  const { play } = useSound();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(AVATARS[0]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -118,7 +120,10 @@ export const Header = ({ activeTab, setActiveTab }: { activeTab: string, setActi
               {['dashboard', 'swap', 'pools', 'leaderboard'].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    play('click');
+                    setActiveTab(tab);
+                  }}
                   className={`px-5 py-1.5 rounded-md text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-500 ${
                     activeTab === tab 
                       ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)]" 
@@ -142,6 +147,7 @@ export const Header = ({ activeTab, setActiveTab }: { activeTab: string, setActi
                 return (
                   <button 
                     onClick={() => {
+                      play('click');
                       checkInWrite({
                         address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
                         abi: [{ name: 'checkIn', type: 'function', stateMutability: 'nonpayable', inputs: [], outputs: [] }],
@@ -179,6 +185,7 @@ export const Header = ({ activeTab, setActiveTab }: { activeTab: string, setActi
                 return (
                   <button 
                     onClick={() => {
+                      play('click');
                       faucetWrite({
                         address: CONTRACT_ADDRESSES.MULTI_FAUCET as `0x${string}`,
                         abi: FAUCET_ABI.abi || FAUCET_ABI,

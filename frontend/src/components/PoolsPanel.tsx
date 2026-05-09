@@ -10,6 +10,7 @@ import ERC20_ABI from '../abis/ERC20.json';
 import { usePrices } from '../context/PriceContext';
 import { useNotifications } from '../context/NotificationContext';
 import { triggerIsland } from './TransactionIsland';
+import { useSound } from '../context/SoundContext';
 
 const FormatSymbol = ({ symbol, className = "" }: { symbol: string | undefined, className?: string }) => {
   if (!symbol) return null;
@@ -118,6 +119,7 @@ export const PoolsPanel = () => {
   const { address } = useAccount();
   const { prices } = usePrices();
   const { notify, dismiss } = useNotifications();
+  const { play } = useSound();
   const [view, setView] = useState<'list' | 'add' | 'remove'>('list');
   const [hideToggle, setHideToggle] = useState(false);
   
@@ -344,6 +346,7 @@ export const PoolsPanel = () => {
   }, [tokenA, tokenB]);
 
   const handleApprove = async (token: any) => {
+    play('click');
     if (!address || !token) return;
     try {
       const tid = notify({ type: 'loading', title: 'Awaiting Approval', message: `Please confirm approval for ${token.symbol} in your wallet.` });
@@ -353,6 +356,7 @@ export const PoolsPanel = () => {
   };
 
   const handleAddLiquidity = async () => {
+    play('click');
     if (!address || !tokenA || !tokenB || !amountA || !amountB) return;
     try {
       const parsedA = parseUnits(amountA, tokenA.decimals);
@@ -364,6 +368,7 @@ export const PoolsPanel = () => {
   };
 
   const handleRemoveLiquidity = async () => {
+    play('click');
     if (!address || !tokenA || !tokenB || userLPBalance <= 0n) return;
     try {
       const liquidityToRemove = (userLPBalance * BigInt(removePercent)) / 100n;
@@ -393,10 +398,12 @@ export const PoolsPanel = () => {
           setLastApprovalHash(null);
           stateA.refetchAllowance?.();
           stateB.refetchAllowance?.();
+          play('success');
           triggerIsland('success', 'Approval Confirmed', hash, { type: 'Approval', asset: view === 'add' ? tokenA?.symbol : 'LP Token', amount: 'Unlimited' });
         } else {
           const fmt = (v: string) => isNaN(parseFloat(v)) ? v : parseFloat(v).toLocaleString(undefined, { maximumFractionDigits: 4 });
           notify({ type: 'success', title: 'Success', message: `Liquidity ${view === 'add' ? 'Addition' : 'Removal'} successful!`, txHash: hash });
+          play('success');
           triggerIsland('success', `${view === 'add' ? 'Add' : 'Remove'} Liquidity Successful`, hash, { 
             type: view === 'add' ? 'Add Liquidity' : 'Remove Liquidity', 
             asset: `${tokenA?.symbol}/${tokenB?.symbol}`, 
