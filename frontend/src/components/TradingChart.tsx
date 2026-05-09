@@ -201,13 +201,14 @@ export const TradingChart = ({ tokenIn, tokenOut }: { tokenIn: any; tokenOut: an
   const gridStartTs = nextBoundary - (24 * 3600 * 1000);
   const gridEndTs = nextBoundary;
 
-  const displayPrices = history.map(d => d.price);
+  const currentP = livePrice || (history.length > 0 ? history[history.length - 1].price : 1);
+  const displayPrices = [...history.map(d => d.price), currentP];
   const rawMax = Math.max(...(displayPrices.length ? displayPrices : [1]));
   const rawMin = Math.min(...(displayPrices.length ? displayPrices : [1]));
   const rawRange = rawMax - rawMin;
   
-  // Add 15% padding top and bottom to keep the line centered and away from edges
-  const padding = rawRange > 0 ? rawRange * 0.15 : rawMax * 0.001;
+  // Add 30% padding top and bottom to ensure the line is well-centered
+  const padding = rawRange > 0 ? rawRange * 0.30 : rawMax * 0.002;
   const maxP = rawMax + padding;
   const minP = rawMin - padding;
   const rangeP = maxP - minP;
