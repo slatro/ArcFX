@@ -477,6 +477,10 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
     setTimeout(() => setRefCopied(false), 2000);
   };
 
+  const isAlreadyBound = myReferrer && myReferrer !== '0x0000000000000000000000000000000000000000';
+  const pendingRef = localStorage.getItem('arc_pending_ref');
+  const showClaimInvite = pendingRef && !isAlreadyBound;
+
   return (
     <div className="w-full space-y-8 px-2">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -496,8 +500,8 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
           color="bg-purple-500/10 text-purple-400"
           onAction={copyRefLink}
           actionLabel={refCopied ? "Copied!" : "Copy Link"}
-          extraInfo={localStorage.getItem('arc_pending_ref') ? "Claim Invite" : undefined}
-          onExtraAction={localStorage.getItem('arc_pending_ref') ? () => handleBindReferrer(localStorage.getItem('arc_pending_ref')!) : undefined}
+          extraInfo={showClaimInvite ? (isBinding || isBindingConfirming ? "Claiming..." : "Claim Invite") : undefined}
+          onExtraAction={showClaimInvite ? () => handleBindReferrer(pendingRef!) : undefined}
         />
         <StatCard title="PORTFOLIO VALUE" value={`$${totalPortfolioValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} change="+1.2%" icon={TrendingUp} color="bg-emerald-500/10 text-emerald-400" />
         <StatCard title="ACTIVE POSITIONS" value={poolDetails.length.toString()} icon={Wallet} color="bg-purple-500/10 text-purple-400" />
