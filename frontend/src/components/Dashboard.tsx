@@ -80,21 +80,22 @@ const StatCard = ({ title, value, change, icon: Icon, color, imageIcon, glowColo
         >
           {actionLabel || 'Action'}
         </button>
-        {onExtraAction && (
+      </div>
+    ) : (extraInfo || pendingAmount !== undefined) && (
+      <div className="flex flex-col items-end ml-auto gap-0.5">
+        {onExtraAction ? (
           <button 
             onClick={(e) => { e.stopPropagation(); onExtraAction(); }}
-            className="text-[7px] font-black text-blue-400 hover:text-white uppercase tracking-widest animate-pulse"
+            className={`text-[9px] font-black uppercase tracking-widest transition-all ${extraInfo === 'DUE' ? 'text-white bg-blue-500/40 px-2 py-0.5 rounded animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'text-blue-400/60'}`}
           >
-            {extraInfo}
+            {extraInfo === 'DUE' ? 'CLAIM NOW' : extraInfo}
           </button>
+        ) : (
+          <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest whitespace-nowrap">{extraInfo}</span>
         )}
-      </div>
-    ) : extraInfo && (
-      <div className="flex flex-col items-end ml-auto">
-        <span className="text-[9px] font-black text-blue-400/60 uppercase tracking-widest whitespace-nowrap mb-0.5">{extraInfo}</span>
         {pendingAmount !== undefined && (
           <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.15em] animate-pulse">
-            +{pendingAmount} Pending
+            +{pendingAmount} Projected
           </span>
         )}
       </div>
@@ -406,30 +407,40 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
   const astUSDC_Bal = parseFloat(formatUnits(astUSDC_BalRaw, 6));
   const stakedValueUsd = astUSDC_Bal * (parseFloat(formatUnits(exchangeRate, 6))) * (prices['USDC']?.price || 1);
 
-  // --- PENDING POINTS CALCULATION ---
+  // --- PENDING POINTS CALCULATION (ONLY NEW ACTIVITY) ---
   const pendingPoints = useMemo(() => {
     if (!address) return 0;
     const lpContribution = Math.floor(lpValue * 10);
     const stakeContribution = Math.floor(stakedValueUsd * 5);
+    
     const contractSwaps = Number((userPointsRes as any)?.[3] || 0);
-    const swapContribution = Math.max(contractSwaps, localSwapCount) * 1; // 1 point per swap as requested
-    const activityBaseline = 25;
+    // Only count swaps that aren't indexed on-chain yet
+    const newSwaps = Math.max(0, localSwapCount - contractSwaps);
+    const swapContribution = newSwaps * 1; 
+    
+    const activityBaseline = 25; // Base daily activity reward
     return lpContribution + stakeContribution + swapContribution + activityBaseline;
   }, [lpValue, stakedValueUsd, userPointsRes, localSwapCount, address]);
 
   const [snapshotCountdown, setSnapshotCountdown] = React.useState('');
+  const [isSnapshotDue, setIsSnapshotDue] = React.useState(false);
 
-  const { writeContract: settlePointsOnChain } = useWriteContract();
+  const { writeContract: settlePointsOnChain, data: settleHash, isPending: isSettling } = useWriteContract();
   const { writeContract: checkInWrite, data: checkInHash, isPending: isCheckingIn } = useWriteContract();
+  
+  const { isLoading: isSettlingConfirming, isSuccess: isSettlingSuccess } = useWaitForTransactionReceipt({ hash: settleHash });
   const { isLoading: isCheckInConfirming, isSuccess: isCheckInSuccess } = useWaitForTransactionReceipt({ hash: checkInHash });
 
+  const isAnyActionPending = isCheckingIn || isSettling || isCheckInConfirming || isSettlingConfirming;
+
   useEffect(() => {
-    if (isCheckInSuccess) {
-      localStorage.removeItem('arc_pending_ref');
-      notify('success', 'Points Claimed!', 'Your daily points and referral have been recorded.');
+    if (isCheckInSuccess || isSettlingSuccess) {
+      if (isCheckInSuccess) localStorage.removeItem('arc_pending_ref');
+      notify('success', 'Points Updated!', 'Your activity has been confirmed on-chain.');
       refetchPoints();
+      refetchSnapshot?.();
     }
-  }, [isCheckInSuccess]);
+  }, [isCheckInSuccess, isSettlingSuccess, refetchPoints, refetchSnapshot]);
 
   const handleCheckIn = () => {
     if (!isCheckInAvailable) return;
@@ -442,32 +453,36 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
     });
   };
 
+  const handleSettleSnapshot = () => {
+    if (pendingPoints <= 0) return;
+    settlePointsOnChain({
+      address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
+      abi: POINTS_ABI.abi || POINTS_ABI,
+      functionName: 'recordActivity',
+      args: [address as `0x${string}`, BigInt(pendingPoints), 'Daily Activity']
+    });
+  };
+
   React.useEffect(() => {
     const timer = setInterval(() => {
       if (!nextSnapshot) return;
       const now = Math.floor(Date.now() / 1000);
       const diff = Number(nextSnapshot) - now;
+      
       if (diff <= 0) {
-        if (pendingPoints > 0) {
-          settlePointsOnChain({
-            address: CONTRACT_ADDRESSES.ARC_POINTS as `0x${string}`,
-            abi: POINTS_ABI.abi || POINTS_ABI,
-            functionName: 'recordActivity',
-            args: [address, BigInt(pendingPoints), 'Daily Activity']
-          });
-          notify('success', `Snapshot Settled: +${pendingPoints} Points Added!`, 'Snapshot complete.');
-        }
-        setSnapshotCountdown('SETTLING...');
-        refetchSnapshot();
+        setIsSnapshotDue(true);
+        setSnapshotCountdown('DUE');
         return;
       }
+      
+      setIsSnapshotDue(false);
       const h = Math.floor(diff / 3600);
       const m = Math.floor((diff % 3600) / 60);
       const s = diff % 60;
       setSnapshotCountdown(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
     }, 1000);
     return () => clearInterval(timer);
-  }, [nextSnapshot, refetchSnapshot, pendingPoints, notify, address, settlePointsOnChain]);
+  }, [nextSnapshot]);
 
 
   // Prepare assets for the chart
@@ -515,11 +530,12 @@ const DashboardContent = ({ onTradeAction }: { onTradeAction: (asset: any) => vo
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-2 md:px-0">
         <StatCard
           title="ARC POINTS"
-          value={userPoints !== undefined ? (Number(userPoints) + localPointsOffset).toString() : '...'}
+          value={isAnyActionPending ? '...' : (userPoints !== undefined ? (Number(userPoints) + localPointsOffset).toString() : '...')}
           isSpecial={true}
           color="bg-blue-500/10 text-blue-400"
-          extraInfo={!isCheckInAvailable && snapshotCountdown ? `Next: ${snapshotCountdown}` : undefined}
+          extraInfo={isAnyActionPending ? 'UPDATING...' : (isCheckInAvailable ? 'CLAIM DAILY BONUS' : (isSnapshotDue ? 'CLAIM SNAPSHOT' : snapshotCountdown))}
           pendingAmount={pendingPoints}
+          onExtraAction={isAnyActionPending ? undefined : (isCheckInAvailable ? handleCheckIn : (isSnapshotDue ? handleSettleSnapshot : undefined))}
         />
         <StatCard 
           title="REFERRAL" 
