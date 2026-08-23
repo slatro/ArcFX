@@ -639,7 +639,7 @@ export const SwapCard = ({
               </div>
               <div className="flex justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
                 <span className="text-[7px] font-bold text-white uppercase tracking-widest">Est. Fees</span>
-                <span className="text-[8px] font-black text-emerald-400 tabular-nums">0.10% + {networkFee}</span>
+                <span className="text-[8px] font-black text-emerald-400 tabular-nums">0.05% + {networkFee}</span>
               </div>
             </div>
           ) : activeTab === 'stake' ? (
